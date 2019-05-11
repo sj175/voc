@@ -2,10 +2,6 @@
 import io
 import re
 from setuptools import setup, find_packages
-import sys
-
-if sys.version_info[:2] < (3, 4):
-    raise SystemExit("VOC requires Python 3.4+")
 
 with io.open('./voc/__init__.py', encoding='utf8') as version_file:
     version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file.read(), re.M)
@@ -28,6 +24,7 @@ setup(
     author_email='russell@keith-magee.com',
     url='http://pybee.org/voc',
     packages=find_packages(exclude=['docs', 'tests']),
+    python_requires='>=3.4',
     entry_points={
         'console_scripts': [
             'voc = voc.__main__:main',
@@ -46,5 +43,11 @@ setup(
         'Topic :: Software Development',
         'Topic :: Utilities',
     ],
-    test_suite='tests'
+    test_suite='tests',
+    package_urls={
+        'Funding': 'https://pybee.org/contributing/membership/',
+        'Documentation': 'https://voc.readthedocs.io/en/latest/',
+        'Tracker': 'https://github.com/pybee/voc/issues',
+        'Source': 'https://github.com/pybee/voc',
+    },
 )

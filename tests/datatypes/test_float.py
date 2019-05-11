@@ -1,4 +1,10 @@
-from .. utils import TranspileTestCase, UnaryOperationTestCase, BinaryOperationTestCase, InplaceOperationTestCase
+from .. utils import (
+    TranspileTestCase,
+    UnaryOperationTestCase,
+    BinaryOperationTestCase,
+    InplaceOperationTestCase,
+    SAMPLE_SUBSTITUTIONS
+)
 
 
 class FloatTests(TranspileTestCase):
@@ -19,6 +25,15 @@ class FloatTests(TranspileTestCase):
             except AttributeError as err:
                 print(err)
             """)
+
+    def test_setitem(self):
+        self.assertCodeExecution("""
+            x = 3.14159
+            try:
+                x[0] = 2
+            except TypeError as err:
+                print(err)
+        """)
 
     def test_repr(self):
         self.assertCodeExecution("""
@@ -95,6 +110,36 @@ class FloatTests(TranspileTestCase):
         code = '\n'.join(template.format(number) for number in numbers)
         self.assertCodeExecution(code)
 
+    def test_mul_TypeError(self):
+        self.assertCodeExecution("""
+            a = 5.6
+            try:
+                print(a*None);
+            except TypeError as e:
+                print(e)
+            """)
+
+    def test_none(self):
+        self.assertCodeExecution("""
+            try:
+                print(float(None))
+            except TypeError as err:
+                print(err)
+        """)
+
+    def test_no_arguments(self):
+        self.assertCodeExecution("""
+            print(float())
+        """)
+
+    def test_too_many_arguments(self):
+        self.assertCodeExecution("""
+            try:
+                print(float(1, 2))
+            except TypeError as err:
+                print(err)
+        """)
+
 
 class UnaryFloatOperationTests(UnaryOperationTestCase, TranspileTestCase):
     data_type = 'float'
@@ -106,67 +151,28 @@ class UnaryFloatOperationTests(UnaryOperationTestCase, TranspileTestCase):
 class BinaryFloatOperationTests(BinaryOperationTestCase, TranspileTestCase):
     data_type = 'float'
 
+    substitutions = {
+        "(-0.8946025309573877+0.446862743585361j)": [
+            "(-0.8946025309573877+0.44686274358536093j)"
+        ]
+    }
+
+    substitutions.update(SAMPLE_SUBSTITUTIONS)
+
     not_implemented = [
-        'test_modulo_complex',
-
-        'test_multiply_bytearray',
-        'test_multiply_bytes',
-        'test_multiply_class',
-        'test_multiply_complex',
-        'test_multiply_frozenset',
-        'test_multiply_NotImplemented',
-        'test_multiply_range',
-
-        'test_power_complex',
-        'test_power_float',
-
-        'test_subscr_bool',
-        'test_subscr_bytearray',
-        'test_subscr_bytes',
-        'test_subscr_class',
-        'test_subscr_complex',
-        'test_subscr_dict',
-        'test_subscr_float',
-        'test_subscr_frozenset',
-        'test_subscr_int',
-        'test_subscr_list',
-        'test_subscr_None',
-        'test_subscr_NotImplemented',
-        'test_subscr_range',
-        'test_subscr_set',
-        'test_subscr_slice',
-        'test_subscr_str',
-        'test_subscr_tuple',
-
-        'test_subtract_complex',
-
-        'test_true_divide_complex',
     ]
 
 
 class InplaceFloatOperationTests(InplaceOperationTestCase, TranspileTestCase):
     data_type = 'float'
 
+    substitutions = {
+        "(-0.8946025309573877+0.446862743585361j)": [
+            "(-0.8946025309573877+0.44686274358536093j)"
+        ]
+    }
+
+    substitutions.update(SAMPLE_SUBSTITUTIONS)
+
     not_implemented = [
-        'test_add_complex',
-
-        'test_modulo_complex',
-
-        'test_multiply_bytearray',
-        'test_multiply_bytes',
-        'test_multiply_class',
-        'test_multiply_complex',
-        'test_multiply_frozenset',
-        'test_multiply_list',
-        'test_multiply_NotImplemented',
-        'test_multiply_range',
-        'test_multiply_str',
-        'test_multiply_tuple',
-
-        'test_power_complex',
-        'test_power_float',
-
-        'test_subtract_complex',
-
-        'test_true_divide_complex',
     ]

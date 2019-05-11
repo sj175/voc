@@ -14,3 +14,10 @@ tests/temp
 .pydevproject
 tests/tmp*
 .cache/
+.env
+/stdlib_tests/*.class
+/stdlib_tests/python
+/python/*.class
+
+.DS_Store
+.idea/

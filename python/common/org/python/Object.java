@@ -34,14 +34,6 @@ public interface Object extends Comparable {
     public java.lang.String typeName();
 
     /**
-     * Return a version of the object that can be used when returning by
-     * value. For most objects, this will be itself; but primitive types
-     * need to return a copy of themselves to ensure that they aren't
-     * modified.
-     */
-    public org.python.Object byValue();
-
-    /**
      * Python interface compatibility
      * Section 3.3.1 - Basic customization
      */
@@ -66,7 +58,7 @@ public interface Object extends Comparable {
     public org.python.Object __ge__(org.python.Object other);
 
     public org.python.Object __hash__();
-
+    public boolean isHashable();
     public org.python.Object __bool__();
 
     /**
@@ -126,9 +118,11 @@ public interface Object extends Comparable {
     public org.python.Object __getitem__(org.python.Object item);
     public void __setitem__(org.python.Object item, org.python.Object value);
     public void __delitem__(org.python.Object item);
-    public org.python.Iterable __iter__();
-    public org.python.Iterable __reversed__();
+    public org.python.Object __iter__();
+    public org.python.Object __reversed__();
     public org.python.Object __contains__(org.python.Object item);
+
+    public org.python.Object __next__();
 
     /**
      * Section 3.3.7 - Emulating numeric types
@@ -168,7 +162,6 @@ public interface Object extends Comparable {
     public org.python.Object __invert__();
 
     public org.python.Object __not__();
-    public org.python.Object __not_contains__(org.python.Object item);
 
     public org.python.Object __complex__(org.python.Object real, org.python.Object imag);
     public org.python.Object __int__();

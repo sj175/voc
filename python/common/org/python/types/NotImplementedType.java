@@ -25,36 +25,8 @@ public class NotImplementedType extends org.python.types.Object {
     @org.python.Method(
             __doc__ = ""
     )
-    public org.python.Object __invert__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary ~: 'NotImplementedType'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __pos__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary +: 'NotImplementedType'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __iadd__(org.python.Object other) {
-        throw new org.python.exceptions.TypeError("unsupported operand type(s) for +=: 'NotImplementedType' and '" + other.typeName() + "'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __neg__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary -: 'NotImplementedType'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
     public org.python.types.Bool __bool__() {
-        return new org.python.types.Bool(true);
+        return org.python.types.Bool.TRUE;
     }
 
     @org.python.Method(
@@ -79,7 +51,7 @@ public class NotImplementedType extends org.python.types.Object {
     )
     public org.python.Object __eq__(org.python.Object other) {
         if (other instanceof org.python.types.NotImplementedType) {
-            return new org.python.types.Bool(true);
+            return org.python.types.Bool.TRUE;
         }
         return org.python.types.NotImplementedType.NOT_IMPLEMENTED;
     }
@@ -105,7 +77,7 @@ public class NotImplementedType extends org.python.types.Object {
             args = {"other"}
     )
     public org.python.Object __mul__(org.python.Object other) {
-        if (other instanceof org.python.types.Str || other instanceof org.python.types.List || other instanceof org.python.types.Tuple) {
+        if (other instanceof org.python.types.Str || other instanceof org.python.types.List || other instanceof org.python.types.Tuple || other instanceof org.python.types.Bytes || other instanceof org.python.types.ByteArray) {
             throw new org.python.exceptions.TypeError("can't multiply sequence by non-int of type 'NotImplementedType'");
         } else {
             throw new org.python.exceptions.TypeError(
@@ -119,7 +91,18 @@ public class NotImplementedType extends org.python.types.Object {
             __doc__ = "",
             args = {"other"}
     )
-    public org.python.Object __getitem__(org.python.Object other) {
-        throw new org.python.exceptions.TypeError("'NotImplementedType' object is not subscriptable");
+    public org.python.Object __imul__(org.python.Object other) {
+        try {
+            return this.__mul__(other);
+        } catch (org.python.exceptions.TypeError e) {
+            if (other instanceof org.python.types.Str || other instanceof org.python.types.List || other instanceof org.python.types.Tuple || other instanceof org.python.types.Bytes || other instanceof org.python.types.ByteArray) {
+                throw new org.python.exceptions.TypeError("can't multiply sequence by non-int of type 'NotImplementedType'");
+            } else {
+                throw new org.python.exceptions.TypeError(
+                        String.format("unsupported operand type(s) for *=: 'NotImplementedType' and '%s'",
+                                other.typeName())
+                );
+            }
+        }
     }
 }

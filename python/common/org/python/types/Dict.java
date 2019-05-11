@@ -3,16 +3,6 @@ package org.python.types;
 public class Dict extends org.python.types.Object {
     public java.util.Map<org.python.Object, org.python.Object> value;
 
-    /**
-     * A utility method to update the internal value of this object.
-     * <p>
-     * Used by __i*__ operations to do an in-place operation.
-     * obj must be of type org.python.types.Dict
-     */
-    void setValue(org.python.Object obj) {
-        this.value = ((org.python.types.Dict) obj).value;
-    }
-
     public java.lang.Object toJava() {
         return this.value;
     }
@@ -24,6 +14,11 @@ public class Dict extends org.python.types.Object {
     @Override
     public org.python.Object __hash__() {
         throw new org.python.exceptions.AttributeError(this, "__hash__");
+    }
+
+    @Override
+    public boolean isHashable() {
+        return false;
     }
 
     public Dict() {
@@ -56,7 +51,7 @@ public class Dict extends org.python.types.Object {
                         ((org.python.types.Dict) args[0]).value
                 );
             } else {
-                org.python.Iterable iterator = org.Python.iter(args[0]);
+                org.python.Object iterator = org.Python.iter(args[0]);
                 java.util.Map<org.python.Object, org.python.Object> generated = new java.util.HashMap<org.python.Object, org.python.Object>();
                 try {
                     while (true) {
@@ -70,7 +65,7 @@ public class Dict extends org.python.types.Object {
                             org.python.types.Str str = ((org.python.types.Str) next);
                             data = new java.util.ArrayList<org.python.Object>();
                             for (int i = 0; i < ((org.python.types.Int) str.__len__()).value; i++) {
-                                data.add(str.__getitem__(new org.python.types.Int(i)));
+                                data.add(str.__getitem__(org.python.types.Int.getInt(i)));
                             }
                         } else {
                             throw new org.python.exceptions.TypeError(
@@ -100,21 +95,21 @@ public class Dict extends org.python.types.Object {
     }
 
     // @org.python.Method(
-    //     __doc__ = ""
+    //     __doc__ = "Create and return a new object.  See help(type) for accurate signature."
     // )
     // public org.python.Object __new__() {
     //     throw new org.python.exceptions.NotImplementedError("dict.__new__() has not been implemented.");
     // }
 
     // @org.python.Method(
-    //     __doc__ = ""
+    //     __doc__ = "Initialize self.  See help(type(self)) for accurate signature."
     // )
     // public org.python.Object __init__() {
     //     throw new org.python.exceptions.NotImplementedError("dict.__init__() has not been implemented.");
     // }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return repr(self)."
     )
     public org.python.types.Str __repr__() {
         java.lang.StringBuilder buffer = new java.lang.StringBuilder("{");
@@ -141,7 +136,7 @@ public class Dict extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "default object formatter"
     )
     public org.python.types.Str __format__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("dict.__format__() has not been implemented.");
@@ -150,40 +145,12 @@ public class Dict extends org.python.types.Object {
     @org.python.Method(
             __doc__ = ""
     )
-    public org.python.Object __pos__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary +: 'dict'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __iadd__(org.python.Object other) {
-        throw new org.python.exceptions.TypeError("unsupported operand type(s) for +=: 'dict' and '" + other.typeName() + "'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __neg__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary -: 'dict'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __invert__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary ~: 'dict'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
     public org.python.Object __bool__() {
-        return new org.python.types.Bool(!this.value.isEmpty());
+        return org.python.types.Bool.getBool(!this.value.isEmpty());
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self<value.",
             args = {"other"}
     )
     public org.python.Object __lt__(org.python.Object other) {
@@ -191,7 +158,7 @@ public class Dict extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self<=value.",
             args = {"other"}
     )
     public org.python.Object __le__(org.python.Object other) {
@@ -199,19 +166,19 @@ public class Dict extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self==value.",
             args = {"other"}
     )
     public org.python.Object __eq__(org.python.Object other) {
         if (other instanceof org.python.types.Dict) {
             org.python.types.Dict otherDict = (org.python.types.Dict) other;
-            return new org.python.types.Bool(this.value.equals(otherDict.value));
+            return org.python.types.Bool.getBool(this.value.equals(otherDict.value));
         }
         return org.python.types.NotImplementedType.NOT_IMPLEMENTED;
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self>value.",
             args = {"other"}
     )
     public org.python.Object __gt__(org.python.Object other) {
@@ -219,7 +186,7 @@ public class Dict extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self>=value.",
             args = {"other"}
     )
     public org.python.Object __ge__(org.python.Object other) {
@@ -227,18 +194,10 @@ public class Dict extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __mul__(org.python.Object other) {
-        if (other instanceof org.python.types.List) {
-            throw new org.python.exceptions.TypeError("can't multiply sequence by non-int of type '" + this.typeName() + "'");
-        } else if (other instanceof org.python.types.Tuple) {
-            throw new org.python.exceptions.TypeError("can't multiply sequence by non-int of type '" + this.typeName() + "'");
-        } else if (other instanceof org.python.types.Str) {
-            throw new org.python.exceptions.TypeError("can't multiply sequence by non-int of type '" + this.typeName() + "'");
-        } else if (other instanceof org.python.types.Bytes) {
-            throw new org.python.exceptions.TypeError("can't multiply sequence by non-int of type '" + this.typeName() + "'");
-        }
         return super.__mul__(other);
     }
 
@@ -248,59 +207,65 @@ public class Dict extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "__dir__() -> list\ndefault dir() implementation"
     )
     public org.python.types.List __dir__() {
         throw new org.python.exceptions.NotImplementedError("dict.__dir__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return len(self)."
     )
     public org.python.types.Int __len__() {
-        return new org.python.types.Int(this.value.size());
+        return org.python.types.Int.getInt(this.value.size());
     }
 
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __getitem__(org.python.Object item) {
-        try {
-            // While hashcode is not used, it is not a redundant line.
-            // We are determining if the item is hashable by seeing if an
-            // exception is thrown.
-            org.python.Object hashcode = item.__hash__();
-
+    private org.python.Object _getitem(org.python.Object item) {
+        if (item.isHashable()) {
             org.python.Object value = this.value.get(item);
+
             if (value == null) {
                 throw new org.python.exceptions.KeyError(item);
             }
             return value;
-        } catch (org.python.exceptions.AttributeError ae) {
+        } else {
             throw new org.python.exceptions.TypeError(
-                    String.format("unhashable type: '%s'", org.Python.typeName(item.getClass())));
+                String.format("unhashable type: '%s'", org.Python.typeName(item.getClass())));
         }
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "x.__getitem__(y) <==> x[y]",
+            args = {"item"}
+    )
+    public org.python.Object __getitem__(org.python.Object item) {
+        try {
+            return _getitem(item);
+        } catch (org.python.exceptions.KeyError e) {
+            try {
+                return this.__missing__(item);
+            } catch (org.python.exceptions.AttributeError ae) {
+                throw new org.python.exceptions.KeyError(item);
+            }
+        }
+    }
+
+    @org.python.Method(
+            __doc__ = "Set self[key] to value.",
+            args = {"item", "value"}
     )
     public void __setitem__(org.python.Object item, org.python.Object value) {
-        try {
-            // While hashcode is not used, it is not a redundant line.
-            // We are determining if the item is hashable by seeing if an
-            // exception is thrown.
-            org.python.Object hashcode = item.__hash__();
-
+        if (item.isHashable()) {
             this.value.put(item, value);
-        } catch (org.python.exceptions.AttributeError ae) {
+        } else {
             throw new org.python.exceptions.TypeError(
                     String.format("unhashable type: '%s'", org.Python.typeName(item.getClass())));
         }
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Delete self[key].",
+            args = {"item"}
     )
     public void __delitem__(org.python.Object item) {
         org.python.Object value = this.value.remove(item);
@@ -310,38 +275,24 @@ public class Dict extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Implement iter(self)."
     )
-    public org.python.Iterable __iter__() {
+    public org.python.Object __iter__() {
         // FIXME: Once this is implemented, update org.Python.addToKwargs()
         return new org.python.types.Dict_KeyIterator(this);
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "True if D has a key k, else False.",
             args = {"item"}
     )
     public org.python.Object __contains__(org.python.Object item) {
         // allow unhashable type error to be percolated up.
         try {
-            __getitem__(item);
-            return new org.python.types.Bool(true);
+            _getitem(item);
+            return org.python.types.Bool.TRUE;
         } catch (org.python.exceptions.KeyError e) {
-            return new org.python.types.Bool(false);
-        }
-    }
-
-    @org.python.Method(
-            __doc__ = "",
-            args = {"item"}
-    )
-    public org.python.Object __not_contains__(org.python.Object item) {
-        // allow unhashable type error to be percolated up.
-        try {
-            __getitem__(item);
-            return new org.python.types.Bool(false);
-        } catch (org.python.exceptions.KeyError e) {
-            return new org.python.types.Bool(true);
+            return org.python.types.Bool.FALSE;
         }
     }
 
@@ -361,14 +312,14 @@ public class Dict extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Returns a new dict with keys from iterable and values equal to value.",
             args = {"iterable"},
             default_args = {"value"}
     )
-    public org.python.Object fromkeys(org.python.Object iterable, org.python.Object value) {
+    public static org.python.Object fromkeys(org.python.Object iterable, org.python.Object value) {
         org.python.types.Dict result = new org.python.types.Dict();
         try {
-            org.python.Iterable iter = iterable.__iter__();
+            org.python.Object iter = iterable.__iter__();
             if (value == null) {
                 value = org.python.types.NoneType.NONE;
             }
@@ -388,7 +339,7 @@ public class Dict extends org.python.types.Object {
     )
     public org.python.Object get(org.python.Object k, org.python.Object d) {
         try {
-            return this.__getitem__(k);
+            return this._getitem(k);
         } catch (org.python.exceptions.KeyError e) { // allow unhashable type error to be percolated up.
             if (d == null) {
                 return org.python.types.NoneType.NONE;
@@ -401,27 +352,15 @@ public class Dict extends org.python.types.Object {
             __doc__ = "D.items() -> a set-like object providing a view on D's items"
     )
     public org.python.Object items() {
-        // FIXME: This should return a dict_view object, not compose a new list.
-        org.python.types.List result = new org.python.types.List();
-        java.util.List<org.python.Object> item;
-        org.python.types.Tuple tuple;
-
-        for (org.python.Object key : this.value.keySet()) {
-            item = new java.util.ArrayList<org.python.Object>();
-            item.add(key);
-            item.add(this.value.get(key));
-
-            tuple = new org.python.types.Tuple(item);
-            result.append(tuple);
-        }
-        return result;
+        return new org.python.types.DictItems(this);
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "D.keys() -> a set-like object providing a view on D's keys"
     )
     public org.python.Object keys() {
-        throw new org.python.exceptions.NotImplementedError("dict.keys() has not been implemented.");
+        //throw new org.python.exceptions.NotImplementedError("dict.keys() has not been implemented.");
+        return new org.python.types.DictKeys(this);
     }
 
     @org.python.Method(
@@ -464,7 +403,7 @@ public class Dict extends org.python.types.Object {
     )
     public org.python.Object setdefault(org.python.Object k, org.python.Object d) {
         try {
-            return this.__getitem__(k);
+            return this._getitem(k);
         } catch (org.python.exceptions.KeyError e) { // allow unhashable type error to be percolated up.
             if (d == null) {
                 d = org.python.types.NoneType.NONE;
@@ -475,16 +414,77 @@ public class Dict extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "D.update([E, ]**F) -> None.  Update D from dict/iterable E and F.\n" +
+            "If E is present and has a .keys() method, then does:  for k in E: D[k] = E[k]\n" +
+            "If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v\n" +
+            "In either case, this is followed by: for k in F:  D[k] = F[k]",
+            default_args = {"iterable"},
+            kwargs = "kwargs"
     )
-    public org.python.Object update(org.python.Object other) {
-        throw new org.python.exceptions.NotImplementedError("dict.update() has not been implemented.");
+    public org.python.Object update(org.python.Object iterable, org.python.types.Dict kwargs) {
+        if (iterable == null) {
+            if (kwargs != null) {
+                org.python.Object iterator = org.Python.iter(kwargs);
+                while (true) {
+                    try {
+                        org.python.Object key = iterator.__next__();
+                        org.python.Object value = kwargs.value.get(key);
+                        this.value.put(key, value);
+                    } catch (org.python.exceptions.StopIteration si) {
+                        break;
+                    }
+                }
+            }
+        } else if (iterable instanceof org.python.types.Dict) {
+            org.python.Object iterator = org.Python.iter(iterable);
+            while (true) {
+                try {
+                    org.python.Object key = iterator.__next__();
+                    org.python.Object value = ((org.python.types.Dict) iterable)._getitem(key);
+                    this.value.put(key, value);
+                } catch (org.python.exceptions.StopIteration si) {
+                    break;
+                }
+            }
+        } else {
+            org.python.Object iterator = org.Python.iter(iterable);
+            int size = 0;
+            java.util.List<org.python.Object> pair;
+            while (true) {
+                try {
+                    org.python.Object next = iterator.__next__();
+                    if (next instanceof org.python.types.List) {
+                        pair = ((org.python.types.List) next).value;
+                    } else if (next instanceof org.python.types.Tuple) {
+                        pair = ((org.python.types.Tuple) next).value;
+                    } else if (next instanceof org.python.types.Str) {
+                        throw new org.python.exceptions.ValueError(
+                        "dictionary update sequence element #" + size + " has length 1; 2 is required");
+                    } else {
+                        throw new org.python.exceptions.TypeError("cannot convert dictionary update sequence element #" + size + " to a sequence");
+                    }
+
+                    if (pair.size() != 2) {
+                        throw new org.python.exceptions.ValueError(
+                        "dictionary update sequence element #" + size + " has length " + pair.size() + "; 2 is required");
+                    }
+                    org.python.Object key = pair.get(0);
+                    org.python.Object value = pair.get(1);
+                    this.value.put(key, value);
+                    size++;
+                } catch (org.python.exceptions.StopIteration si) {
+                    break;
+                }
+            }
+        }
+        return org.python.types.NoneType.NONE;
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "D.values() -> an object providing a view on D's values"
     )
     public org.python.Object values() {
-        throw new org.python.exceptions.NotImplementedError("dict.values() has not been implemented.");
+        //throw new org.python.exceptions.NotImplementedError("dict.values() has not been implemented.");
+        return new org.python.types.DictValues(this);
     }
 }

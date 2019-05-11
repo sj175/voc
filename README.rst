@@ -1,6 +1,6 @@
-.. image:: http://pybee.org/project/projects/bridges/voc/voc.png
+.. image:: https://beeware.org/project/projects/bridges/voc/voc.png
     :width: 72px
-    :target: https://pybee.org/voc
+    :target: https://beeware.org/project/projects/bridges/voc/
 
 VOC
 ===
@@ -17,8 +17,8 @@ VOC
 .. image:: https://img.shields.io/pypi/l/voc.svg
     :target: https://github.com/pybee/voc/blob/master/LICENSE
 
-.. image:: https://travis-ci.org/pybee/voc.svg?branch=master
-    :target: https://travis-ci.org/pybee/voc
+.. image:: https://beekeeper.herokuapp.com/projects/pybee/voc/shield
+    :target: https://beekeeper.herokuapp.com/projects/pybee/voc
 
 .. image:: https://badges.gitter.im/pybee/general.svg
     :target: https://gitter.im/pybee/general
@@ -48,10 +48,10 @@ with `the first tutorial`_.
 
 If you'd like to contribute to VOC development, we have a `guide for first time contributors`_.
 
-.. _Getting Started guide: https://voc.readthedocs.io/en/latest/intro/index.html
-.. _the first tutorial: https://voc.readthedocs.io/en/latest/tutorials/tutorial-0.html
+.. _Getting Started guide: https://voc.readthedocs.io/en/latest/index.html
+.. _the first tutorial: https://voc.readthedocs.io/en/latest/tutorial/tutorial-0.html
 
-.. _guide for first time contributors: http://pybee.org/contributing/how/first-time/what/voc/
+.. _guide for first time contributors: https://beeware.org/contributing/how/first-time/what/voc/
 
 Documentation
 -------------
@@ -102,8 +102,8 @@ want to contribute code, please `fork the code`_ and `submit a pull request`_.
 .. _Read The Docs: https://voc.readthedocs.io
 .. _@pybeeware on Twitter: https://twitter.com/pybeeware
 .. _pybee/general: https://gitter.im/pybee/general
-.. _BeeWare Community Code of Conduct: http://pybee.org/community/behavior/
-.. _First Timers Guide: http://pybee.org/contributing/how/first-time/what/voc/
+.. _BeeWare Community Code of Conduct: https://beeware.org/community/behavior/
+.. _First Timers Guide: https://beeware.org/contributing/how/first-time/what/voc/
 .. _log them on Github: https://github.com/pybee/voc/issues
 .. _fork the code: https://github.com/pybee/voc
 .. _submit a pull request: https://github.com/pybee/voc/pulls

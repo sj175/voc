@@ -25,7 +25,7 @@ class Iterable:
         def process(self, context):
             context.add_opcodes(
                 JavaOpcodes.INVOKEINTERFACE(
-                    'org/python/Iterable',
+                    'org/python/Object',
                     '__next__',
                     args=[],
                     returns='Lorg/python/Object;'
@@ -179,7 +179,7 @@ class Object:
                     'org/python/Object',
                     '__iter__',
                     args=[],
-                    returns='Lorg/python/Iterable;'
+                    returns='Lorg/python/Object;'
                 )
             )
 
@@ -276,4 +276,27 @@ class Str:
             context.add_opcodes(
                 Java.New('org/python/types/Str'),
                 Java.Init('org/python/types/Str')
+            )
+
+class Array:
+    class get_item:
+        def process(self, context):
+            context.add_opcodes(
+                JavaOpcodes.INVOKEINTERFACE(
+                    'org/python/Object',
+                    '__getitem__',
+                    args=['I'],
+                    returns='Lorg/python/Object;'
+                ),
+            )
+
+    class set_item:
+        def process(self, context):
+            context.add_opcodes(
+                JavaOpcodes.INVOKEINTERFACE(
+                    'org/python/Object',
+                    '__setitem__',
+                    args=['I', 'Lorg/python/Object;'],
+                    returns='V'
+                ),
             )

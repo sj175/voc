@@ -1,13 +1,20 @@
 import os
 
 from ..java import (
-    Annotation, Class as JavaClass, Code as JavaCode, ConstantElementValue,
-    Field as JavaField, Method as JavaMethod, RuntimeVisibleAnnotations,
-    SourceFile, opcodes as JavaOpcodes,
+    Annotation,
+    Class as JavaClass,
+    Classref as JavaClassref,
+    Code as JavaCode,
+    ConstantElementValue,
+    Field as JavaField,
+    Method as JavaMethod, RuntimeVisibleAnnotations,
+    SourceFile,
+    opcodes as JavaOpcodes,
 )
 from .blocks import Block, IgnoreBlock
 from .methods import (
-    InitMethod, ClosureInitMethod, Method
+    InitMethod, ClosureInitMethod,
+    GeneratorMethod, Method, CO_GENERATOR,
 )
 from .types import java, python
 from .types.primitives import (
@@ -20,14 +27,14 @@ class Class(Block):
     CONSTRUCTOR = InitMethod
 
     def __init__(
-            self, module, name,
+            self, parent, name,
             namespace=None, extends=None, implements=None,
             public=True, final=False, methods=None, fields=None, init=None,
             verbosity=0, include_default_constructor=True):
-        super().__init__(parent=module, verbosity=verbosity)
+        super().__init__(parent=parent, verbosity=verbosity)
         self.name = name
         if namespace is None:
-            self.namespace = '%s.%s' % (module.namespace, module.name)
+            self.namespace = '.'.join([self.module.namespace, self.module.name])
         else:
             self.namespace = namespace
 
@@ -50,17 +57,92 @@ class Class(Block):
 
         self._constructor = None
 
+        # Store the Module object as a local variable
+        self.store_module()
+
     @property
     def descriptor(self):
-        return '/'.join([self.namespace.replace('.', '/'), self.name])
+        return self._parent.build_child_class_descriptor(self.name)
 
     @property
     def class_name(self):
-        return '.'.join(self.namespace.split('.') + [self.name])
+        return '.'.join([self._parent.class_name, self.name])
 
     @property
     def module(self):
-        return self._parent
+        return self._parent.module
+
+    def store_module(self):
+        # Stores the current module as a local variable
+        if ('#module') not in self.local_vars:
+            self.add_opcodes(
+                JavaOpcodes.GETSTATIC('python/sys', 'modules', 'Lorg/python/types/Dict;'),
+
+                python.Str(self.module.full_name),
+
+                python.Object.get_item(),
+                JavaOpcodes.CHECKCAST('org/python/types/Module'),
+
+                ASTORE_name('#module'),
+            )
+
+    def build_child_class_descriptor(self, child_name):
+        return '$'.join([self.descriptor, child_name])
+
+    def add_class(self, class_name, extends, implements):
+        klass = Class(
+            self,
+            name=class_name,
+            extends=extends,
+            implements=implements,
+        )
+
+        self.module.classes.append(klass)
+
+        self.add_opcodes(
+            # Stack contains the bases list
+            ASTORE_name('#bases'),
+
+            # DEBUG("FORCE LOAD OF CLASS %s AT DEFINITION" % klass.descriptor),
+            # - class
+            JavaOpcodes.LDC_W(JavaClassref(klass.descriptor)),
+
+            # - name
+            JavaOpcodes.LDC_W(klass.name),
+
+            # - bases
+            ALOAD_name('#bases'),
+
+            # - dict
+            JavaOpcodes.ACONST_NULL(),
+
+            JavaOpcodes.INVOKESTATIC(
+                'org/python/types/Type',
+                'declarePythonType',
+                args=[
+                    'Ljava/lang/Class;',
+                    'Ljava/lang/String;',
+                    'Ljava/util/List;',
+                    'Ljava/util/Map;'
+                ],
+                returns='Lorg/python/types/Type;'
+            ),
+
+            free_name('#bases')
+        )
+
+        self.store_name(klass.name)
+
+        self.add_opcodes(
+            JavaOpcodes.INVOKESTATIC(
+                klass.descriptor,
+                'class$init',
+                args=[],
+                returns='V'
+            ),
+        )
+
+        return klass
 
     def visitor_setup(self):
         self.add_opcodes(
@@ -133,13 +215,7 @@ class Class(Block):
 
     def load_globals(self):
         self.add_opcodes(
-            JavaOpcodes.GETSTATIC('python/sys', 'modules', 'Lorg/python/types/Dict;'),
-
-            python.Str(self.module.full_name),
-
-            python.Object.get_item(),
-            JavaOpcodes.CHECKCAST('org/python/types/Module'),
-
+            ALOAD_name('#module'),
             JavaOpcodes.GETFIELD('org/python/types/Module', '__dict__', 'Ljava/util/Map;'),
         )
 
@@ -170,8 +246,17 @@ class Class(Block):
         self._constructor = value
 
     def add_function(self, name, code, parameter_signatures, return_signature):
-        if False:  # FIXME code.co_flags & CO_GENERATOR:
-            raise Exception("Can't handle Generator instance methods (yet)")
+        if code.co_flags & CO_GENERATOR:
+            method = GeneratorMethod(
+                self,
+                name=name,
+                code=code,
+                generator=code.co_name,
+                parameters=parameter_signatures,
+                returns=return_signature,
+                static=True
+            )
+
         else:
             method = Method(
                 self,
@@ -179,7 +264,7 @@ class Class(Block):
                 code=code,
                 parameters=parameter_signatures,
                 returns=return_signature,
-                static=True,
+                static=True
             )
 
         # Add the method to the list that need to be
@@ -278,19 +363,18 @@ class Class(Block):
                 )
             )
 
-        return self.namespace, self.name, classfile
+        return self.namespace, self.descriptor.split('/')[-1], classfile
 
 
 class ClosureClass(Class):
     CONSTRUCTOR = ClosureInitMethod
 
-    def __init__(self, module, name, closure_var_names, verbosity=0):
+    def __init__(self, parent, name, verbosity=0):
         super().__init__(
-            module=module,
+            parent=parent,
             name=name,
             extends='org/python/types/Closure',
             implements=['org/python/Callable'],
             verbosity=verbosity,
             include_default_constructor=False,
         )
-        self.closure_var_names = closure_var_names

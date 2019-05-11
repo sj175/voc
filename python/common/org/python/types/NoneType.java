@@ -12,20 +12,6 @@ public class NoneType extends org.python.types.Object {
     @org.python.Method(
             __doc__ = ""
     )
-    public org.python.Object __pos__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary +: 'NoneType'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __iadd__(org.python.Object other) {
-        throw new org.python.exceptions.TypeError("unsupported operand type(s) for +=: 'NoneType' and '" + other.typeName() + "'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
     public org.python.Object __ilshift__(org.python.Object other) {
         throw new org.python.exceptions.TypeError("unsupported operand type(s) for <<=: 'NoneType' and '" + other.typeName() + "'");
     }
@@ -40,22 +26,8 @@ public class NoneType extends org.python.types.Object {
     @org.python.Method(
             __doc__ = ""
     )
-    public org.python.Object __neg__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary -: 'NoneType'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __invert__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary ~: 'NoneType'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
     public org.python.Object __bool__() {
-        return new org.python.types.Bool(false);
+        return org.python.types.Bool.FALSE;
     }
 
     @org.python.Method(
@@ -80,7 +52,7 @@ public class NoneType extends org.python.types.Object {
     )
     public org.python.Object __eq__(org.python.Object other) {
         if (other instanceof org.python.types.NoneType) {
-            return new org.python.types.Bool(true);
+            return org.python.types.Bool.TRUE;
         }
         return org.python.types.NotImplementedType.NOT_IMPLEMENTED;
     }
@@ -105,11 +77,25 @@ public class NoneType extends org.python.types.Object {
             __doc__ = ""
     )
     public org.python.Object __mul__(org.python.Object other) {
-        if (other instanceof org.python.types.Str || other instanceof org.python.types.List || other instanceof org.python.types.Tuple) {
+        if (org.python.types.Object.isSequence(other)) {
             throw new org.python.exceptions.TypeError("can't multiply sequence by non-int of type 'NoneType'");
         } else {
             throw new org.python.exceptions.TypeError(
                     String.format("unsupported operand type(s) for *: 'NoneType' and '%s'",
+                            Python.typeName(other.getClass())));
+        }
+    }
+
+
+    @org.python.Method(
+            __doc__ = ""
+    )
+    public org.python.Object __imul__(org.python.Object other) {
+        if (org.python.types.Object.isSequence(other)) {
+            throw new org.python.exceptions.TypeError("can't multiply sequence by non-int of type 'NoneType'");
+        } else {
+            throw new org.python.exceptions.TypeError(
+                    String.format("unsupported operand type(s) for *=: 'NoneType' and '%s'",
                             Python.typeName(other.getClass())));
         }
     }

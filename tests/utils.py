@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import traceback
 from unittest import TestCase
 from itertools import permutations
@@ -15,6 +16,7 @@ from voc.python.blocks import Block as PyBlock
 from voc.python.modules import Module as PyModule
 from voc.java.constants import ConstantPool, Utf8
 from voc.java.klass import ClassFileReader, ClassFileWriter
+
 from voc.java.attributes import Code as JavaCode
 from voc.transpiler import Transpiler
 
@@ -203,6 +205,8 @@ JAVA_STACK = re.compile(
     re.MULTILINE
 )
 
+PYDEV_CONNECT = re.compile("pydev debugger: process \\d+ is connecting[\r|\n]+")
+
 PYTHON_EXCEPTION = re.compile(
     'Traceback \(most recent call last\):\r?\n(  File "(?P<file>.*)", line (?P<line>\d+), ' +
     'in .*\r?\n    .*\r?\n)+(?P<exception>[^:]*)(?::\s)?(?P<message>.*\n)$')
@@ -213,6 +217,9 @@ MEMORY_REFERENCE = re.compile('0x[\dABCDEFabcdef]{4,16}')
 
 END_OF_CODE_STRING = '===end of test==='
 END_OF_CODE_STRING_NEWLINE = END_OF_CODE_STRING + '\n'
+
+# Prevent floating point discrepancies in very low significant digits from being an issue
+FLOAT_PRECISION = re.compile('(\\.\d{5})\d+')
 
 
 def cleanse_java(raw, substitutions):
@@ -252,6 +259,7 @@ def cleanse_java(raw, substitutions):
     )
 
     out = MEMORY_REFERENCE.sub("0xXXXXXXXX", out)
+
     out = out.replace(
         "'python.test'", '***EXECUTABLE***').replace(
         "'python.testdaemon.TestDaemon'", '***EXECUTABLE***')
@@ -266,6 +274,10 @@ def cleanse_java(raw, substitutions):
                 out = out.replace(from_value, to_value)
 
     out = out.replace('\r\n', '\n')
+
+    # Replace high precision floats with abbreviated forms
+    out = FLOAT_PRECISION.sub('\\1...', out)
+
     return out
 
 
@@ -275,6 +287,8 @@ def cleanse_python(raw, substitutions):
         '### EXCEPTION ###{linesep}\\g<exception>: \\g<message>'.format(linesep=os.linesep),
         raw
     )
+
+    out = PYDEV_CONNECT.sub('', out)
 
     stack = PYTHON_STACK.findall(raw)
     out = '%s%s%s' % (
@@ -299,6 +313,10 @@ def cleanse_python(raw, substitutions):
                 out = out.replace(from_value, to_value)
 
     out = out.replace('\r\n', '\n')
+
+    # Replace high precision floats with abbreviated forms
+    out = FLOAT_PRECISION.sub('\\1...', out)
+
     return out
 
 
@@ -366,7 +384,7 @@ class TranspileTestCase(TestCase):
             extra_code=None,
             run_in_global=True, run_in_function=True, exits_early=False,
             args=None, substitutions=None):
-        "Run code as native python, and under Java and check the output is identical"
+        """"Run code as native python, and under Java and check the output is identical"""
         self.maxDiff = None
         # ==================================================
         # Pass 1 - run the code in the global context
@@ -383,7 +401,14 @@ class TranspileTestCase(TestCase):
                 self.fail(e)
             finally:
                 # Clean up the test directory where the class file was written.
-                shutil.rmtree(self.temp_dir)
+                # (we have to set ignore_errors for this to work on Windows)
+                # Ignoring all errors can be anxiety-inducing so we'll do one more
+                # check on the directory afterwards now.
+                shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+                if os.path.exists(self.temp_dir):
+                    raise IsADirectoryError("{} was unsuccessfully deleted".format
+                                            (self.temp_dir))
                 # print(java_out)
 
             # Cleanse the Python and Java output, producing a simple
@@ -399,14 +424,16 @@ class TranspileTestCase(TestCase):
             self.assertEqual(java_out, py_out, context)
 
             # Confirm that both output strings end with the canary statement
-            substring_start = - (len(END_OF_CODE_STRING)+1)
             if exits_early:
-                self.assertNotEqual(java_out[substring_start:], END_OF_CODE_STRING_NEWLINE)
-                self.assertNotEqual(py_out[substring_start:], END_OF_CODE_STRING_NEWLINE)
+                if java_out.endswith(END_OF_CODE_STRING_NEWLINE):
+                    self.fail("Java test failed to raise exception \n%s" % java_out)
+                if py_out.endswith(END_OF_CODE_STRING_NEWLINE):
+                    self.fail("Python test failed to raise exception \n%s" % py_out)
             else:
-                self.assertEqual(java_out[substring_start:], END_OF_CODE_STRING_NEWLINE)
-                self.assertEqual(py_out[substring_start:], END_OF_CODE_STRING_NEWLINE)
-
+                if not java_out.endswith(END_OF_CODE_STRING_NEWLINE):
+                    self.fail("Java test failed prematurely \n%s" % java_out)
+                if not py_out.endswith(END_OF_CODE_STRING_NEWLINE):
+                    self.fail("Python test failed prematurely \n%s" % py_out)
         # ==================================================
         # Pass 2 - run the code in a function's context
         # ==================================================
@@ -438,13 +465,16 @@ class TranspileTestCase(TestCase):
             self.assertEqual(java_out, py_out, context)
 
             # Confirm that both output strings end with the canary statement
-            substring_start = - (len(END_OF_CODE_STRING)+1)
             if exits_early:
-                self.assertNotEqual(java_out[substring_start:], END_OF_CODE_STRING_NEWLINE)
-                self.assertNotEqual(py_out[substring_start:], END_OF_CODE_STRING_NEWLINE)
+                if java_out.endswith(END_OF_CODE_STRING_NEWLINE):
+                    self.fail("Java test failed to raise exception \n%s" % java_out)
+                if py_out.endswith(END_OF_CODE_STRING_NEWLINE):
+                    self.fail("Python test failed to raise exception \n%s" % py_out)
             else:
-                self.assertEqual(java_out[substring_start:], END_OF_CODE_STRING_NEWLINE)
-                self.assertEqual(py_out[substring_start:], END_OF_CODE_STRING_NEWLINE)
+                if not java_out.endswith(END_OF_CODE_STRING_NEWLINE):
+                    self.fail("Java test failed prematurely \n%s" % java_out)
+                if not py_out.endswith(END_OF_CODE_STRING_NEWLINE):
+                    self.fail("Python test failed prematurely \n%s" % py_out)
 
     def assertJavaExecution(
                 self, code, out,
@@ -534,7 +564,7 @@ class TranspileTestCase(TestCase):
         except FileExistsError:
             pass
 
-    def runAsJava(self, main_code, extra_code=None, args=None):
+    def runAsJava(self, main_code, extra_code=None, args=None, timed=False):
         """Run a block of Python code as a Java program."""
         # Output source code into test directory
         transpiler = Transpiler(verbosity=0)
@@ -542,6 +572,7 @@ class TranspileTestCase(TestCase):
         # Don't redirect stderr; we want to see any errors from the transpiler
         # as top level test failures.
         with capture_output(redirect_stderr=False):
+
             transpiler.transpile_string("test.py", main_code)
 
             if extra_code:
@@ -553,7 +584,11 @@ class TranspileTestCase(TestCase):
         if args is None:
             args = []
 
+        t1_start = time.perf_counter()
+        t2_start = time.process_time()
+
         if len(args) == 0:
+
             # encode to turn str into bytes-like object
             self.jvm.stdin.write(("python.test\n").encode("utf-8"))
             self.jvm.stdin.flush()
@@ -568,12 +603,17 @@ class TranspileTestCase(TestCase):
                         out += line
                 except IOError as e:
                     continue
+
+            t1_stop = time.perf_counter()
+            t2_stop = time.process_time()
+
         else:
             classpath = os.pathsep.join([
                 os.path.join('..', 'dist', 'python-java-support.jar'),
                 os.path.join('..', 'java'),
                 os.curdir,
             ])
+
             proc = subprocess.Popen(
                 ["java", "-classpath", classpath, "python.test"] + args,
                 stdin=subprocess.PIPE,
@@ -581,8 +621,23 @@ class TranspileTestCase(TestCase):
                 stderr=subprocess.STDOUT,
                 cwd=self.temp_dir
             )
+
+            t1_stop = time.perf_counter()
+            t2_stop = time.process_time()
+
             out = proc.communicate()[0].decode('utf8')
 
+            if proc.returncode != 0:
+                raise Exception(
+                    "Java subprocess didn't exit cleanly (exit status %s)\n\n: %s" % (
+                        proc.returncode, out
+                    )
+                )
+
+        if timed:
+            print("  Elapsed time: ", (t1_stop-t1_start), " sec")
+            print("  CPU process time: ", (t2_stop-t2_start), " sec")
+            
         return out
 
 
@@ -638,6 +693,10 @@ class NotImplementedToExpectedFailure:
 
 
 SAMPLE_DATA = {
+    'obj': [
+            'object',
+            'object()',
+        ],
     'bool': [
             'True',
             'False',
@@ -659,6 +718,8 @@ SAMPLE_DATA = {
             'type("a")',
             'type(object())',
             'type("MyClass", (object,), {})',
+            # This datatype is here and must be here in order to "clear" the state set by type("MyClass", (object,), {})
+            'type("object", (object,), {})'
         ],
     'complex': [
             '1j',
@@ -761,6 +822,7 @@ SAMPLE_SUBSTITUTIONS = {
     "{'an', 'to', 'on'}": _string_substitutions("{'an', 'to', 'on'}"),
     "{'one', 'two', 'six'}": _string_substitutions("{'one', 'two', 'six'}"),
     "{'a', 'b', 'c'}": _string_substitutions("{'a', 'b', 'c'}"),
+
 
     # Normalize list ordering
     "[1, 2.3456, 7]": _string_substitutions("[1, 2.3456, 7]"),

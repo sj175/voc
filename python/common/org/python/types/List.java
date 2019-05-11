@@ -8,16 +8,6 @@ import java.util.Comparator;
 public class List extends org.python.types.Object {
     public java.util.List<org.python.Object> value;
 
-    /**
-     * A utility method to update the internal value of this object.
-     * <p>
-     * Used by __i*__ operations to do an in-place operation.
-     * obj must be of type org.python.types.List
-     */
-    void setValue(org.python.Object obj) {
-        this.value = ((org.python.types.List) obj).value;
-    }
-
     public java.lang.Object toJava() {
         return this.value;
     }
@@ -29,6 +19,11 @@ public class List extends org.python.types.Object {
     @Override
     public org.python.Object __hash__() {
         throw new org.python.exceptions.AttributeError(this, "__hash__");
+    }
+
+    @Override
+    public boolean isHashable() {
+        return false;
     }
 
     public List() {
@@ -50,7 +45,7 @@ public class List extends org.python.types.Object {
         super();
         if (args[0] == null) {
             this.value = new java.util.ArrayList<org.python.Object>();
-        } else {
+        } else if (args.length == 1) {
             if (args[0] instanceof org.python.types.List) {
                 this.value = new java.util.ArrayList<org.python.Object>(
                         ((org.python.types.List) args[0]).value
@@ -64,7 +59,7 @@ public class List extends org.python.types.Object {
                         ((org.python.types.Tuple) args[0]).value
                 );
             } else {
-                org.python.Iterable iterator = org.Python.iter(args[0]);
+                org.python.Object iterator = org.Python.iter(args[0]);
                 java.util.List<org.python.Object> generated = new java.util.ArrayList<org.python.Object>();
                 try {
                     while (true) {
@@ -75,6 +70,8 @@ public class List extends org.python.types.Object {
                 }
                 this.value = generated;
             }
+        } else {
+            throw new org.python.exceptions.TypeError("list() takes at most 1 argument (" + args.length + " given)");
         }
     }
 
@@ -87,51 +84,59 @@ public class List extends org.python.types.Object {
     // }
 
     @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __pos__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary +: 'list'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __neg__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary -: 'list'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Implement self+=value.",
+            args = {"other"}
     )
     public org.python.Object __iadd__(org.python.Object other) {
         if (other instanceof org.python.types.List) {
             this.value.addAll(((org.python.types.List) other).value);
-            return this;
         } else if (other instanceof org.python.types.Tuple) {
             this.value.addAll(((org.python.types.Tuple) other).value);
-            return this;
+        } else if (other instanceof org.python.types.Set) {
+            this.value.addAll(((org.python.types.Set) other).value);
+        } else if (other instanceof org.python.types.FrozenSet) {
+            this.value.addAll(((org.python.types.FrozenSet) other).value);
+        } else if (
+                (other instanceof org.python.types.Str) ||
+                (other instanceof org.python.types.Dict) ||
+                (other instanceof org.python.types.Range) ||
+                (other instanceof org.python.types.Bytes) ||
+                (other instanceof org.python.types.ByteArray)) {
+            org.python.Object iter = null;
+            if (other instanceof org.python.types.Str) {
+                iter = ((org.python.types.Str) other).__iter__();
+            } else if (other instanceof org.python.types.Dict) {
+                iter = ((org.python.types.Dict) other).__iter__();
+            } else if (other instanceof org.python.types.Range) {
+                iter = ((org.python.types.Range) other).__iter__();
+            } else if (other instanceof org.python.types.Bytes) {
+                iter = ((org.python.types.Bytes) other).__iter__();
+            } else if (other instanceof org.python.types.ByteArray) {
+                iter = ((org.python.types.ByteArray) other).__iter__();
+            }
+            while (true) {
+                try {
+                    this.value.add(iter.__next__());
+                } catch (org.python.exceptions.StopIteration ae) {
+                    break;
+                }
+            }
         } else {
             throw new org.python.exceptions.TypeError(
                     String.format("'%s' object is not iterable", Python.typeName(other.getClass())));
         }
-    }
-
-    @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __invert__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary ~: 'list'");
+        return this;
     }
 
     @org.python.Method(
             __doc__ = ""
     )
     public org.python.Object __bool__() {
-        return new org.python.types.Bool(!this.value.isEmpty());
+        return org.python.types.Bool.getBool(!this.value.isEmpty());
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return repr(self)."
     )
     public org.python.types.Str __repr__() {
         java.lang.StringBuilder buffer = new java.lang.StringBuilder("[");
@@ -149,14 +154,14 @@ public class List extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "default object formatter"
     )
     public org.python.types.Str __format__() {
         throw new org.python.exceptions.NotImplementedError("list.__format__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self<value.",
             args = {"other"}
     )
     public org.python.Object __lt__(org.python.Object other) {
@@ -169,8 +174,8 @@ public class List extends org.python.types.Object {
             // check how many items are identical on the lists
             int i = 0;
             for (i = 0; i < count; i++) {
-                org.python.types.Bool result = (org.python.types.Bool) org.python.types.Object.__cmp_bool__(
-                        this.value.get(i), otherList.value.get(i), org.python.types.Object.CMP_OP.EQ);
+                org.python.types.Bool result = (org.python.types.Bool) org.python.types.Object.__cmp_eq__(
+                        this.value.get(i), otherList.value.get(i));
                 if (!result.value) {
                     break;
                 }
@@ -178,19 +183,18 @@ public class List extends org.python.types.Object {
 
             // not all items were identical, result is that of the first non-identical item
             if (i < count) {
-                return org.python.types.Object.__cmp_bool__(this.value.get(i), otherList.value.get(i),
-                        org.python.types.Object.CMP_OP.LT);
+                return org.python.types.Object.__lt__(this.value.get(i), otherList.value.get(i));
             }
 
             // all items were identical, break tie by size
-            return new org.python.types.Bool(size < otherSize);
+            return org.python.types.Bool.getBool(size < otherSize);
         } else {
             return org.python.types.NotImplementedType.NOT_IMPLEMENTED;
         }
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self<=value.",
             args = {"other"}
     )
     public org.python.Object __le__(org.python.Object other) {
@@ -203,8 +207,8 @@ public class List extends org.python.types.Object {
             // check how many items are identical on the lists
             int i = 0;
             for (i = 0; i < count; i++) {
-                org.python.types.Bool result = (org.python.types.Bool) org.python.types.Object.__cmp_bool__(
-                        this.value.get(i), otherList.value.get(i), org.python.types.Object.CMP_OP.EQ);
+                org.python.types.Bool result = (org.python.types.Bool) org.python.types.Object.__cmp_eq__(
+                        this.value.get(i), otherList.value.get(i));
                 if (!result.value) {
                     break;
                 }
@@ -212,31 +216,30 @@ public class List extends org.python.types.Object {
 
             // not all items were identical, result is that of the first non-identical item
             if (i < count) {
-                return org.python.types.Object.__cmp_bool__(this.value.get(i), otherList.value.get(i),
-                        org.python.types.Object.CMP_OP.LE);
+                return org.python.types.Object.__le__(this.value.get(i), otherList.value.get(i));
             }
 
             // all items were identical, break tie by size
-            return new org.python.types.Bool(size <= otherSize);
+            return org.python.types.Bool.getBool(size <= otherSize);
         } else {
             return org.python.types.NotImplementedType.NOT_IMPLEMENTED;
         }
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self==value.",
             args = {"other"}
     )
     public org.python.Object __eq__(org.python.Object other) {
         if (other instanceof org.python.types.List) {
             org.python.types.List otherList = (org.python.types.List) other;
-            return new org.python.types.Bool(this.value.equals(otherList.value));
+            return org.python.types.Bool.getBool(this.value.equals(otherList.value));
         }
         return org.python.types.NotImplementedType.NOT_IMPLEMENTED;
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self>value.",
             args = {"other"}
     )
     public org.python.Object __gt__(org.python.Object other) {
@@ -249,8 +252,8 @@ public class List extends org.python.types.Object {
             // check how many items are identical on the lists
             int i = 0;
             for (i = 0; i < count; i++) {
-                org.python.types.Bool result = (org.python.types.Bool) org.python.types.Object.__cmp_bool__(
-                        this.value.get(i), otherList.value.get(i), org.python.types.Object.CMP_OP.EQ);
+                org.python.types.Bool result = (org.python.types.Bool) org.python.types.Object.__cmp_eq__(
+                        this.value.get(i), otherList.value.get(i));
                 if (!result.value) {
                     break;
                 }
@@ -258,19 +261,18 @@ public class List extends org.python.types.Object {
 
             // not all items were identical, result is that of the first non-identical item
             if (i < count) {
-                return org.python.types.Object.__cmp_bool__(this.value.get(i), otherList.value.get(i),
-                        org.python.types.Object.CMP_OP.GT);
+                return org.python.types.Object.__gt__(this.value.get(i), otherList.value.get(i));
             }
 
             // all items were identical, break tie by size
-            return new org.python.types.Bool(size > otherSize);
+            return org.python.types.Bool.getBool(size > otherSize);
         } else {
             return org.python.types.NotImplementedType.NOT_IMPLEMENTED;
         }
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self>=value.",
             args = {"other"}
     )
     public org.python.Object __ge__(org.python.Object other) {
@@ -283,8 +285,8 @@ public class List extends org.python.types.Object {
             // check how many items are identical on the lists
             int i = 0;
             for (i = 0; i < count; i++) {
-                org.python.types.Bool result = (org.python.types.Bool) org.python.types.Object.__cmp_bool__(
-                        this.value.get(i), otherList.value.get(i), org.python.types.Object.CMP_OP.EQ);
+                org.python.types.Bool result = (org.python.types.Bool) org.python.types.Object.__cmp_eq__(
+                        this.value.get(i), otherList.value.get(i));
                 if (!result.value) {
                     break;
                 }
@@ -292,12 +294,11 @@ public class List extends org.python.types.Object {
 
             // not all items were identical, result is that of the first non-identical item
             if (i < count) {
-                return org.python.types.Object.__cmp_bool__(this.value.get(i), otherList.value.get(i),
-                        org.python.types.Object.CMP_OP.GE);
+                return org.python.types.Object.__ge__(this.value.get(i), otherList.value.get(i));
             }
 
             // all items were identical, break tie by size
-            return new org.python.types.Bool(size >= otherSize);
+            return org.python.types.Bool.getBool(size >= otherSize);
         } else {
             return org.python.types.NotImplementedType.NOT_IMPLEMENTED;
         }
@@ -309,19 +310,20 @@ public class List extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return len(self)."
     )
     public org.python.types.Int __len__() {
-        return new org.python.types.Int(this.value.size());
+        return org.python.types.Int.getInt(this.value.size());
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "x.__getitem__(y) <==> x[y]",
+            args = {"index"}
     )
     public org.python.Object __getitem__(org.python.Object index) {
         try {
             if (index instanceof org.python.types.Slice) {
-                org.python.types.Slice slice = (org.python.types.Slice) index;
+                org.python.types.Slice.ValidatedValue slice = ((org.python.types.Slice) index).validateValueTypes();
                 java.util.List<org.python.Object> sliced = new java.util.ArrayList<org.python.Object>();
 
                 if (slice.start == null && slice.stop == null && slice.step == null) {
@@ -337,36 +339,50 @@ public class List extends org.python.types.Object {
                     if (step < 0) {
                         long start;
                         if (slice.start != null) {
-                            start = Math.min(slice.start.value, this.value.size());
+                            if (slice.start.value < 0) {
+                                start = Math.max((this.value.size() + slice.start.value), -1);
+                            } else {
+                                start = Math.min(slice.start.value, this.value.size() - 1);
+                            }
                         } else {
                             start = this.value.size() - 1;
                         }
 
                         long stop;
                         if (slice.stop != null) {
-                            stop = Math.min(slice.stop.value, start);
+                            if (slice.stop.value < 0) {
+                                stop = Math.max((this.value.size() + slice.stop.value), 0);
+                            } else {
+                                stop = Math.min(slice.stop.value, this.value.size());
+                            }
                         } else {
                             stop = -1;
                         }
-
                         for (long i = start; i > stop; i += step) {
                             sliced.add(this.value.get((int) i));
                         }
                     } else {
                         long start;
                         if (slice.start != null) {
-                            start = Math.min(slice.start.value, this.value.size());
+                            if (slice.start.value < 0) {
+                                start = Math.max((this.value.size() + slice.start.value), 0);
+                            } else {
+                                start = Math.min(slice.start.value, this.value.size());
+                            }
                         } else {
                             start = 0;
                         }
 
                         long stop;
                         if (slice.stop != null) {
-                            stop = Math.min(slice.stop.value, this.value.size());
+                            if (slice.stop.value < 0) {
+                                stop = Math.max((this.value.size() + slice.stop.value), 0);
+                            } else {
+                                stop = Math.min(slice.stop.value, this.value.size());
+                            }
                         } else {
                             stop = this.value.size();
                         }
-
                         for (long i = start; i < stop; i += step) {
                             sliced.add(this.value.get((int) i));
                         }
@@ -374,7 +390,12 @@ public class List extends org.python.types.Object {
                 }
                 return new org.python.types.List(sliced);
             } else {
-                int idx = (int) ((org.python.types.Int) index).value;
+                int idx;
+                if (index instanceof org.python.types.Bool) {
+                    idx = (int) ((org.python.types.Bool) index).__int__().value;
+                } else {
+                    idx = (int) ((org.python.types.Int) index).value;
+                }
                 if (idx < 0) {
                     if (-idx > this.value.size()) {
                         throw new org.python.exceptions.IndexError("list index out of range");
@@ -402,12 +423,20 @@ public class List extends org.python.types.Object {
         }
     }
 
+
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Set self[key] to value.",
+            args = {"index", "value"}
     )
     public void __setitem__(org.python.Object index, org.python.Object value) {
         try {
-            int idx = (int) ((org.python.types.Int) index).value;
+
+            int idx;
+            if (index instanceof org.python.types.Bool) {
+                idx = (int) ((org.python.types.Bool) index).__int__().value;
+            } else {
+                idx = (int) ((org.python.types.Int) index).value;
+            }
             if (idx < 0) {
                 if (-idx > this.value.size()) {
                     throw new org.python.exceptions.IndexError("list assignment index out of range");
@@ -435,11 +464,17 @@ public class List extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Delete self[key].",
+            args = {"index"}
     )
     public void __delitem__(org.python.Object index) {
         try {
-            int idx = (int) ((org.python.types.Int) index).value;
+            int idx;
+            if (index instanceof org.python.types.Bool) {
+                idx = (int) ((org.python.types.Bool) index).__int__().value;
+            } else {
+                idx = (int) ((org.python.types.Int) index).value;
+            }
             if (idx < 0) {
                 if (-idx > this.value.size()) {
                     throw new org.python.exceptions.IndexError("list index out of range");
@@ -467,9 +502,9 @@ public class List extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Implement iter(self)."
     )
-    public org.python.Iterable __iter__() {
+    public org.python.Object __iter__() {
         return new org.python.types.List_Iterator(this);
     }
 
@@ -479,33 +514,29 @@ public class List extends org.python.types.Object {
                       "in the list in reverse order. Does not\n" +
                       "modify the original list."
     )
-    public org.python.Iterable __reversed__() {
-        org.python.types.List list = new org.python.types.List();
-        for (int i = this.value.size() - 1; i >= 0; i--) {
-            list.append(this.value.get(i));
-        }
-        org.python.Iterable iter = new org.python.types.List_Iterator(list);
-        return iter;
+    public org.python.Object __reversed__() {
+        return new org.python.types.List_ReverseIterator(this);
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return key in self.",
             args = {"item"}
     )
     public org.python.Object __contains__(org.python.Object item) {
         boolean found = false;
         for (int i = 0; i < this.value.size(); i++) {
-            if (((org.python.types.Bool) org.python.types.Object.__cmp_bool__(
-                    item, this.value.get(i), org.python.types.Object.CMP_OP.EQ)).value) {
+            if (((org.python.types.Bool) org.python.types.Object.__cmp_eq__(
+                    item, this.value.get(i))).value) {
                 found = true;
                 break;
             }
         }
-        return new org.python.types.Bool(found);
+        return org.python.types.Bool.getBool(found);
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self+value.",
+            args = {"other"}
     )
     public org.python.Object __add__(org.python.Object other) {
         if (other instanceof org.python.types.List) {
@@ -520,7 +551,8 @@ public class List extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self*value.n",
+            args = {"other"}
     )
     public org.python.Object __mul__(org.python.Object other) {
         if (other instanceof org.python.types.Int) {
@@ -542,7 +574,8 @@ public class List extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Implement self*=value.",
+            args = {"other"}
     )
     public org.python.Object __imul__(org.python.Object other) {
         if (other instanceof org.python.types.Int) {
@@ -565,14 +598,15 @@ public class List extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self*value.",
+            args = {"other"}
     )
     public org.python.Object __rmul__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("list.__rmul__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "L.append(object) -> None -- append object to end",
             args = {"item"}
     )
     public org.python.Object append(org.python.Object item) {
@@ -581,7 +615,7 @@ public class List extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "L.clear() -> None -- remove all items from L"
     )
     public org.python.Object clear() {
         this.value.clear();
@@ -596,24 +630,63 @@ public class List extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "L.count(value) -> integer -- return number of occurrences of value",
             args = {"other"}
     )
     public org.python.Object count(org.python.Object other) {
         int count = 0;
         for (int i = 0; i < this.value.size(); i++) {
-            if (((org.python.types.Bool) org.python.types.Object.__cmp_bool__(
-                    other, this.value.get(i), org.python.types.Object.CMP_OP.EQ)).value) {
+            if (((org.python.types.Bool) org.python.types.Object.__cmp_eq__(
+                    other, this.value.get(i))).value) {
                 count++;
             }
         }
-        return new org.python.types.Int(count);
+        return org.python.types.Int.getInt(count);
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "L.extend(iterable) -> None -- extend list by appending elements from the iterable",
+            args = {"other"}
     )
     public org.python.Object extend(org.python.Object other) {
+        if (other instanceof org.python.types.List) {
+            this.value.addAll(((org.python.types.List) other).value);
+        } else if (other instanceof org.python.types.FrozenSet) {
+            this.value.addAll(((org.python.types.FrozenSet) other).value);
+        } else if (other instanceof org.python.types.Set) {
+            this.value.addAll(((org.python.types.Set) other).value);
+        } else if (other instanceof org.python.types.Tuple) {
+            this.value.addAll(((org.python.types.Tuple) other).value);
+        } else if (other instanceof org.python.types.Dict) {
+            this.value.addAll(((org.python.types.Dict) other).value.keySet());
+        } else if (
+                (other instanceof org.python.types.Str) ||
+                (other instanceof org.python.types.Range) ||
+                (other instanceof org.python.types.Bytes) ||
+                (other instanceof org.python.types.ByteArray) ||
+                (other instanceof org.python.types.Iterator)) {
+            org.python.Object iter = null;
+            if (other instanceof org.python.types.Str) {
+                iter = ((org.python.types.Str) other).__iter__();
+            } else if (other instanceof org.python.types.Range) {
+                iter = ((org.python.types.Range) other).__iter__();
+            } else if (other instanceof org.python.types.Bytes) {
+                iter = ((org.python.types.Bytes) other).__iter__();
+            } else if (other instanceof org.python.types.ByteArray) {
+                iter = ((org.python.types.ByteArray) other).__iter__();
+            } else if (other instanceof org.python.types.Iterator) {
+                iter = other;
+            }
+            while (true) {
+                try {
+                    this.value.add(iter.__next__());
+                } catch (org.python.exceptions.StopIteration si) {
+                    break;
+                }
+            }
+        } else {
+            throw new org.python.exceptions.TypeError("'" + other.typeName() + "' object is not iterable");
+        }
         return org.python.types.NoneType.NONE;
     }
 
@@ -662,12 +735,33 @@ public class List extends org.python.types.Object {
         }
 
         for (int i = iStart; i < Math.min(iEnd, this.value.size()); i++) {
-            if (((org.python.types.Bool) org.python.types.Object.__cmp_bool__(
-                    item, this.value.get(i), org.python.types.Object.CMP_OP.EQ)).value) {
-                return new org.python.types.Int(i);
+            if (((org.python.types.Bool) org.python.types.Object.__cmp_eq__(
+                    item, this.value.get(i))).value) {
+                return org.python.types.Int.getInt(i);
             }
         }
         throw new org.python.exceptions.ValueError(String.format("%d is not in list", ((org.python.types.Int) item).value));
+    }
+
+    @org.python.Method(
+            __doc__ = "L.insert(index, value) -> None -- Insert an item at a given index.",
+            args = {"index", "item"}
+    )
+    public org.python.Object insert(org.python.Object index, org.python.Object item) {
+        if (!(index instanceof org.python.types.Int)) {
+            throw new org.python.exceptions.TypeError(
+                "'" + index.typeName() + "' object cannot be interpreted as an integer"
+            );
+        }
+        int posIndex = toPositiveIndex(((Long) index.toJava()).intValue());
+        if (posIndex >= 0 && posIndex < this.value.size()) {
+            this.value.add(posIndex, item);
+        } else if (posIndex >= this.value.size()) {
+            this.value.add(item);
+        } else if (posIndex < 0) {
+            this.value.add(0, item);
+        }
+        return org.python.types.NoneType.NONE;
     }
 
     @org.python.Method(
@@ -691,18 +785,26 @@ public class List extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "L.remove(value) -> None -- remove first occurrence of value.\nRaises ValueError if the value is not present.",
             args = {"item"}
     )
     public org.python.Object remove(org.python.Object item) {
         for (int i = 0; i < this.value.size(); i++) {
-            if (((org.python.types.Bool) org.python.types.Object.__cmp_bool__(
-                    item, this.value.get(i), org.python.types.Object.CMP_OP.EQ)).value) {
+            if (((org.python.types.Bool) org.python.types.Object.__cmp_eq__(
+                    item, this.value.get(i))).value) {
                 this.value.remove(i);
                 return org.python.types.NoneType.NONE;
             }
         }
         throw new org.python.exceptions.ValueError("list.remove(x): x not in list");
+    }
+
+    @org.python.Method(
+            __doc__ = "L.reverse() -> None -- reverse the elements of the L in place."
+    )
+    public org.python.Object reverse() {
+        Collections.reverse(this.value);
+        return org.python.types.NoneType.NONE;
     }
 
     @org.python.Method(

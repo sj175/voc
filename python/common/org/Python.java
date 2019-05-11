@@ -22,7 +22,6 @@ public class Python {
         builtins.put("False", org.python.types.Bool.FALSE);
 
         // Primitives, which are both functions and types.
-        builtins.put("bool", org.python.types.Type.pythonType(org.python.types.Bool.class));
         builtins.put("bytearray", org.python.types.Type.pythonType(org.python.types.ByteArray.class));
         builtins.put("bytes", org.python.types.Type.pythonType(org.python.types.Bytes.class));
         builtins.put("complex", org.python.types.Type.pythonType(org.python.types.Complex.class));
@@ -36,101 +35,120 @@ public class Python {
         builtins.put("str", org.python.types.Type.pythonType(org.python.types.Str.class));
         builtins.put("tuple", org.python.types.Type.pythonType(org.python.types.Tuple.class));
 
+        // subclasses of int
+        java.lang.Class base = org.python.types.Int.class;
+        builtins.put("bool", org.python.types.Type.pythonType(org.python.types.Bool.class, base));
+
         // Add all the builtin exceptions
         builtins.put("BaseException", org.python.types.Type.pythonType(org.python.exceptions.BaseException.class));
 
-        builtins.put("SystemExit", org.python.types.Type.pythonType(org.python.exceptions.SystemExit.class));
-        builtins.put("KeyboardInterrupt", org.python.types.Type.pythonType(org.python.exceptions.KeyboardInterrupt.class));
-        builtins.put("GeneratorExit", org.python.types.Type.pythonType(org.python.exceptions.GeneratorExit.class));
-        builtins.put("Exception", org.python.types.Type.pythonType(org.python.exceptions.Exception.class));
+        base = org.python.exceptions.BaseException.class;
+        builtins.put("SystemExit", org.python.types.Type.pythonType(org.python.exceptions.SystemExit.class, base));
+        builtins.put("KeyboardInterrupt", org.python.types.Type.pythonType(org.python.exceptions.KeyboardInterrupt.class, base));
+        builtins.put("GeneratorExit", org.python.types.Type.pythonType(org.python.exceptions.GeneratorExit.class, base));
+        builtins.put("Exception", org.python.types.Type.pythonType(org.python.exceptions.Exception.class, base));
 
         // subclasses of Exception
-        builtins.put("StopIteration", org.python.types.Type.pythonType(org.python.exceptions.StopIteration.class));
-        // New in Python 3.5: builtins.put("StopAsyncIteration", org.python.types.Type.pythonType(org.python.exceptions.StopAsyncIteration.class));
-        builtins.put("ArithmeticError", org.python.types.Type.pythonType(org.python.exceptions.ArithmeticError.class));
-        builtins.put("AssertionError", org.python.types.Type.pythonType(org.python.exceptions.AssertionError.class));
-        builtins.put("AttributeError", org.python.types.Type.pythonType(org.python.exceptions.AttributeError.class));
-        builtins.put("BufferError", org.python.types.Type.pythonType(org.python.exceptions.BufferError.class));
-        builtins.put("EOFError", org.python.types.Type.pythonType(org.python.exceptions.EOFError.class));
-        builtins.put("ImportError", org.python.types.Type.pythonType(org.python.exceptions.ImportError.class));
-        builtins.put("LookupError", org.python.types.Type.pythonType(org.python.exceptions.LookupError.class));
-        builtins.put("MemoryError", org.python.types.Type.pythonType(org.python.exceptions.MemoryError.class));
-        builtins.put("NameError", org.python.types.Type.pythonType(org.python.exceptions.NameError.class));
-        builtins.put("OSError", org.python.types.Type.pythonType(org.python.exceptions.OSError.class));
-        builtins.put("ReferenceError", org.python.types.Type.pythonType(org.python.exceptions.ReferenceError.class));
-        builtins.put("RuntimeError", org.python.types.Type.pythonType(org.python.exceptions.RuntimeError.class));
-        builtins.put("SyntaxError", org.python.types.Type.pythonType(org.python.exceptions.SyntaxError.class));
-        builtins.put("SystemError", org.python.types.Type.pythonType(org.python.exceptions.SystemError.class));
-        builtins.put("TypeError", org.python.types.Type.pythonType(org.python.exceptions.TypeError.class));
-        builtins.put("ValueError", org.python.types.Type.pythonType(org.python.exceptions.ValueError.class));
-        builtins.put("Warning", org.python.types.Type.pythonType(org.python.exceptions.Warning.class));
+        base = org.python.exceptions.Exception.class;
+        builtins.put("StopIteration", org.python.types.Type.pythonType(org.python.exceptions.StopIteration.class, base));
+        // New in Python 3.5: builtins.put("StopAsyncIteration", org.python.types.Type.pythonType(org.python.exceptions.StopAsyncIteration.class, base));
+        builtins.put("ArithmeticError", org.python.types.Type.pythonType(org.python.exceptions.ArithmeticError.class, base));
+        builtins.put("AssertionError", org.python.types.Type.pythonType(org.python.exceptions.AssertionError.class, base));
+        builtins.put("AttributeError", org.python.types.Type.pythonType(org.python.exceptions.AttributeError.class, base));
+        builtins.put("BufferError", org.python.types.Type.pythonType(org.python.exceptions.BufferError.class, base));
+        builtins.put("EOFError", org.python.types.Type.pythonType(org.python.exceptions.EOFError.class, base));
+        builtins.put("ImportError", org.python.types.Type.pythonType(org.python.exceptions.ImportError.class, base));
+        builtins.put("LookupError", org.python.types.Type.pythonType(org.python.exceptions.LookupError.class, base));
+        builtins.put("MemoryError", org.python.types.Type.pythonType(org.python.exceptions.MemoryError.class, base));
+        builtins.put("NameError", org.python.types.Type.pythonType(org.python.exceptions.NameError.class, base));
+        builtins.put("OSError", org.python.types.Type.pythonType(org.python.exceptions.OSError.class, base));
+        builtins.put("ReferenceError", org.python.types.Type.pythonType(org.python.exceptions.ReferenceError.class, base));
+        builtins.put("RuntimeError", org.python.types.Type.pythonType(org.python.exceptions.RuntimeError.class, base));
+        builtins.put("SyntaxError", org.python.types.Type.pythonType(org.python.exceptions.SyntaxError.class, base));
+        builtins.put("SystemError", org.python.types.Type.pythonType(org.python.exceptions.SystemError.class, base));
+        builtins.put("TypeError", org.python.types.Type.pythonType(org.python.exceptions.TypeError.class, base));
+        builtins.put("ValueError", org.python.types.Type.pythonType(org.python.exceptions.ValueError.class, base));
+        builtins.put("Warning", org.python.types.Type.pythonType(org.python.exceptions.Warning.class, base));
 
         // subclasses of ArithmeticError
-        builtins.put("FloatingPointError", org.python.types.Type.pythonType(org.python.exceptions.FloatingPointError.class));
-        builtins.put("OverflowError", org.python.types.Type.pythonType(org.python.exceptions.OverflowError.class));
-        builtins.put("ZeroDivisionError", org.python.types.Type.pythonType(org.python.exceptions.ZeroDivisionError.class));
+        base = org.python.exceptions.ArithmeticError.class;
+        builtins.put("FloatingPointError", org.python.types.Type.pythonType(org.python.exceptions.FloatingPointError.class, base));
+        builtins.put("OverflowError", org.python.types.Type.pythonType(org.python.exceptions.OverflowError.class, base));
+        builtins.put("ZeroDivisionError", org.python.types.Type.pythonType(org.python.exceptions.ZeroDivisionError.class, base));
 
         // subclasses of ImportError
-        // New in 3.6: builtins.put("ModuleNotFoundError", org.python.types.Type.pythonType(org.python.exceptions.ModuleNotFoundError.class));
+        // base = org.python.exceptions.ImportError.class;
+        // New in 3.6: builtins.put("ModuleNotFoundError", org.python.types.Type.pythonType(org.python.exceptions.ModuleNotFoundError.class, base));
 
         // subclasses of LookupError
-        builtins.put("IndexError", org.python.types.Type.pythonType(org.python.exceptions.IndexError.class));
-        builtins.put("KeyError", org.python.types.Type.pythonType(org.python.exceptions.KeyError.class));
+        base = org.python.exceptions.LookupError.class;
+        builtins.put("IndexError", org.python.types.Type.pythonType(org.python.exceptions.IndexError.class, base));
+        builtins.put("KeyError", org.python.types.Type.pythonType(org.python.exceptions.KeyError.class, base));
 
         // subclasses of NameError
-        builtins.put("UnboundLocalError", org.python.types.Type.pythonType(org.python.exceptions.UnboundLocalError.class));
+        base = org.python.exceptions.NameError.class;
+        builtins.put("UnboundLocalError", org.python.types.Type.pythonType(org.python.exceptions.UnboundLocalError.class, base));
 
         // subclasses of OSError
-        builtins.put("BlockingIOError", org.python.types.Type.pythonType(org.python.exceptions.BlockingIOError.class));
-        builtins.put("ChildProcessError", org.python.types.Type.pythonType(org.python.exceptions.ChildProcessError.class));
-        builtins.put("ConnectionError", org.python.types.Type.pythonType(org.python.exceptions.ConnectionError.class));
-        builtins.put("FileExistsError", org.python.types.Type.pythonType(org.python.exceptions.FileExistsError.class));
-        builtins.put("FileNotFoundError", org.python.types.Type.pythonType(org.python.exceptions.FileNotFoundError.class));
-        builtins.put("InterruptedError", org.python.types.Type.pythonType(org.python.exceptions.InterruptedError.class));
-        builtins.put("IsADirectoryError", org.python.types.Type.pythonType(org.python.exceptions.IsADirectoryError.class));
-        builtins.put("NotADirectoryError", org.python.types.Type.pythonType(org.python.exceptions.NotADirectoryError.class));
-        builtins.put("PermissionError", org.python.types.Type.pythonType(org.python.exceptions.PermissionError.class));
-        builtins.put("ProcessLookupError", org.python.types.Type.pythonType(org.python.exceptions.ProcessLookupError.class));
-        builtins.put("TimeoutError", org.python.types.Type.pythonType(org.python.exceptions.TimeoutError.class));
+        base = org.python.exceptions.OSError.class;
+        builtins.put("BlockingIOError", org.python.types.Type.pythonType(org.python.exceptions.BlockingIOError.class, base));
+        builtins.put("ChildProcessError", org.python.types.Type.pythonType(org.python.exceptions.ChildProcessError.class, base));
+        builtins.put("ConnectionError", org.python.types.Type.pythonType(org.python.exceptions.ConnectionError.class, base));
+        builtins.put("FileExistsError", org.python.types.Type.pythonType(org.python.exceptions.FileExistsError.class, base));
+        builtins.put("FileNotFoundError", org.python.types.Type.pythonType(org.python.exceptions.FileNotFoundError.class, base));
+        builtins.put("InterruptedError", org.python.types.Type.pythonType(org.python.exceptions.InterruptedError.class, base));
+        builtins.put("IsADirectoryError", org.python.types.Type.pythonType(org.python.exceptions.IsADirectoryError.class, base));
+        builtins.put("NotADirectoryError", org.python.types.Type.pythonType(org.python.exceptions.NotADirectoryError.class, base));
+        builtins.put("PermissionError", org.python.types.Type.pythonType(org.python.exceptions.PermissionError.class, base));
+        builtins.put("ProcessLookupError", org.python.types.Type.pythonType(org.python.exceptions.ProcessLookupError.class, base));
+        builtins.put("TimeoutError", org.python.types.Type.pythonType(org.python.exceptions.TimeoutError.class, base));
 
-        builtins.put("IOError", org.python.types.Type.pythonType(org.python.exceptions.OSError.class));
-        builtins.put("EnvironmentError", org.python.types.Type.pythonType(org.python.exceptions.OSError.class));
+        base = org.python.exceptions.Exception.class;
+        builtins.put("IOError", org.python.types.Type.pythonType(org.python.exceptions.OSError.class, base));
+        builtins.put("EnvironmentError", org.python.types.Type.pythonType(org.python.exceptions.OSError.class, base));
 
         // subclasses of ConnectionError
-        builtins.put("BrokenPipeError", org.python.types.Type.pythonType(org.python.exceptions.BrokenPipeError.class));
-        builtins.put("ConnectionAbortedError", org.python.types.Type.pythonType(org.python.exceptions.ConnectionAbortedError.class));
-        builtins.put("ConnectionRefusedError", org.python.types.Type.pythonType(org.python.exceptions.ConnectionRefusedError.class));
-        builtins.put("ConnectionResetError", org.python.types.Type.pythonType(org.python.exceptions.ConnectionResetError.class));
+        base = org.python.exceptions.ConnectionError.class;
+        builtins.put("BrokenPipeError", org.python.types.Type.pythonType(org.python.exceptions.BrokenPipeError.class, base));
+        builtins.put("ConnectionAbortedError", org.python.types.Type.pythonType(org.python.exceptions.ConnectionAbortedError.class, base));
+        builtins.put("ConnectionRefusedError", org.python.types.Type.pythonType(org.python.exceptions.ConnectionRefusedError.class, base));
+        builtins.put("ConnectionResetError", org.python.types.Type.pythonType(org.python.exceptions.ConnectionResetError.class, base));
 
         // subclasses of RuntimeError
-        builtins.put("NotImplementedError", org.python.types.Type.pythonType(org.python.exceptions.NotImplementedError.class));
-        // new in Python 3.5: builtins.put("RecursionError", org.python.types.Type.pythonType(org.python.exceptions.RecursionError.class));
+        base = org.python.exceptions.RuntimeError.class;
+        builtins.put("NotImplementedError", org.python.types.Type.pythonType(org.python.exceptions.NotImplementedError.class, base));
+        // new in Python 3.5: builtins.put("RecursionError", org.python.types.Type.pythonType(org.python.exceptions.RecursionError.class, base));
 
         // subclasses of SyntaxError
-        builtins.put("IndentationError", org.python.types.Type.pythonType(org.python.exceptions.IndentationError.class));
+        base = org.python.exceptions.SyntaxError.class;
+        builtins.put("IndentationError", org.python.types.Type.pythonType(org.python.exceptions.IndentationError.class, base));
 
         // subclasses of IndentationError
-        builtins.put("TabError", org.python.types.Type.pythonType(org.python.exceptions.TabError.class));
+        base = org.python.exceptions.IndentationError.class;
+        builtins.put("TabError", org.python.types.Type.pythonType(org.python.exceptions.TabError.class, base));
 
         // subclasses of ValueError
-        builtins.put("UnicodeError", org.python.types.Type.pythonType(org.python.exceptions.UnicodeError.class));
+        base = org.python.exceptions.ValueError.class;
+        builtins.put("UnicodeError", org.python.types.Type.pythonType(org.python.exceptions.UnicodeError.class, base));
 
         // subclasses of UnicodeError
-        builtins.put("UnicodeDecodeError", org.python.types.Type.pythonType(org.python.exceptions.UnicodeDecodeError.class));
-        builtins.put("UnicodeEncodeError", org.python.types.Type.pythonType(org.python.exceptions.UnicodeEncodeError.class));
-        builtins.put("UnicodeTranslateError", org.python.types.Type.pythonType(org.python.exceptions.UnicodeTranslateError.class));
+        base = org.python.exceptions.UnicodeError.class;
+        builtins.put("UnicodeDecodeError", org.python.types.Type.pythonType(org.python.exceptions.UnicodeDecodeError.class, base));
+        builtins.put("UnicodeEncodeError", org.python.types.Type.pythonType(org.python.exceptions.UnicodeEncodeError.class, base));
+        builtins.put("UnicodeTranslateError", org.python.types.Type.pythonType(org.python.exceptions.UnicodeTranslateError.class, base));
 
         // subclasses of Warning
-        builtins.put("DeprecationWarning", org.python.types.Type.pythonType(org.python.exceptions.DeprecationWarning.class));
-        builtins.put("PendingDeprecationWarning", org.python.types.Type.pythonType(org.python.exceptions.PendingDeprecationWarning.class));
-        builtins.put("RuntimeWarning", org.python.types.Type.pythonType(org.python.exceptions.RuntimeWarning.class));
-        builtins.put("SyntaxWarning", org.python.types.Type.pythonType(org.python.exceptions.SyntaxWarning.class));
-        builtins.put("UserWarning", org.python.types.Type.pythonType(org.python.exceptions.UserWarning.class));
-        builtins.put("FutureWarning", org.python.types.Type.pythonType(org.python.exceptions.FutureWarning.class));
-        builtins.put("ImportWarning", org.python.types.Type.pythonType(org.python.exceptions.ImportWarning.class));
-        builtins.put("UnicodeWarning", org.python.types.Type.pythonType(org.python.exceptions.UnicodeWarning.class));
-        builtins.put("BytesWarning", org.python.types.Type.pythonType(org.python.exceptions.BytesWarning.class));
-        builtins.put("ResourceWarning", org.python.types.Type.pythonType(org.python.exceptions.ResourceWarning.class));
+        base = org.python.exceptions.Warning.class;
+        builtins.put("DeprecationWarning", org.python.types.Type.pythonType(org.python.exceptions.DeprecationWarning.class, base));
+        builtins.put("PendingDeprecationWarning", org.python.types.Type.pythonType(org.python.exceptions.PendingDeprecationWarning.class, base));
+        builtins.put("RuntimeWarning", org.python.types.Type.pythonType(org.python.exceptions.RuntimeWarning.class, base));
+        builtins.put("SyntaxWarning", org.python.types.Type.pythonType(org.python.exceptions.SyntaxWarning.class, base));
+        builtins.put("UserWarning", org.python.types.Type.pythonType(org.python.exceptions.UserWarning.class, base));
+        builtins.put("FutureWarning", org.python.types.Type.pythonType(org.python.exceptions.FutureWarning.class, base));
+        builtins.put("ImportWarning", org.python.types.Type.pythonType(org.python.exceptions.ImportWarning.class, base));
+        builtins.put("UnicodeWarning", org.python.types.Type.pythonType(org.python.exceptions.UnicodeWarning.class, base));
+        builtins.put("BytesWarning", org.python.types.Type.pythonType(org.python.exceptions.BytesWarning.class, base));
+        builtins.put("ResourceWarning", org.python.types.Type.pythonType(org.python.exceptions.ResourceWarning.class, base));
 
         org.Python.initializeModule(org.Python.class, builtins);
     }
@@ -147,6 +165,66 @@ public class Python {
         }
     }
 
+    // This function gets a method defined on the class by name and creates an org.python.types.Function wrapper for it
+    // If no method is found, returns null
+    public static org.python.types.Function getPythonFunction(java.lang.String name, java.lang.Class cls) {
+        for (java.lang.reflect.Method method : cls.getMethods()) {
+            org.python.Method cls_annotation = method.getAnnotation(org.python.Method.class);
+            if (cls_annotation != null) {
+                java.lang.String nameToCheck;
+
+                if (cls_annotation.name().equals("")) {
+                    nameToCheck = method.getName();
+
+                } else {
+                    nameToCheck = cls_annotation.name();
+                }
+
+                if (name.equals(nameToCheck)) {
+                    return org.Python.createFunction(cls_annotation, method);
+                }
+            }
+        }
+        // Failed.
+        return null;
+    }
+
+    // This function performs the following initialization work:
+    //     1. Puts the __doc__ property on the given dictionary (a __dict__)
+    //     2. Puts the names of all Python methods defined on the class into the dictionary,
+    //        but does not create a function wrapper for the method, i.e. (method_name, null)
+    public static void loadModule(java.lang.Class cls, java.util.Map<java.lang.String, org.python.Object> attrs) {
+        // Get the class annotation and add any properties.
+        org.python.Module mod_annotation = (org.python.Module) cls.getAnnotation(org.python.Module.class);
+        if (mod_annotation != null) {
+            java.lang.String __doc__ = mod_annotation.__doc__();
+            if (__doc__.equals("[undocumented]")) {
+                attrs.put("__doc__", org.python.types.NoneType.NONE);
+            } else {
+                attrs.put("__doc__", new org.python.types.Str(__doc__));
+            }
+        }
+
+        for (java.lang.reflect.Method method : cls.getMethods()) {
+            org.python.Method cls_annotation = method.getAnnotation(org.python.Method.class);
+            if (cls_annotation != null) {
+                java.lang.String method_name;
+
+                // Check for any explicitly set names
+                if (cls_annotation.name().equals("")) {
+                    method_name = method.getName();
+                } else {
+                    method_name = cls_annotation.name();
+                }
+
+                attrs.put(method_name, null);
+            }
+        }
+    }
+
+    // This function performs the following initialization work:
+    //     1. Puts the __doc__ property on the given dictionary (a __dict__)
+    //     2. Puts all Python methods defined on the class into the dictionary i.e. (method_name, function)
     public static void initializeModule(java.lang.Class cls, java.util.Map<java.lang.String, org.python.Object> attrs) {
         // Get the class annotation and add any properties.
         org.python.Module mod_annotation = (org.python.Module) cls.getAnnotation(org.python.Module.class);
@@ -166,8 +244,6 @@ public class Python {
             org.python.Method cls_annotation = method.getAnnotation(org.python.Method.class);
             if (cls_annotation != null) {
                 java.lang.String method_name;
-                java.lang.String varargs_name;
-                java.lang.String kwargs_name;
 
                 // Check for any explicitly set names
                 if (cls_annotation.name().equals("")) {
@@ -176,31 +252,34 @@ public class Python {
                     method_name = cls_annotation.name();
                 }
 
-                if (cls_annotation.varargs().equals("")) {
-                    varargs_name = null;
-                } else {
-                    varargs_name = cls_annotation.varargs();
-                }
-
-                if (cls_annotation.kwargs().equals("")) {
-                    kwargs_name = null;
-                } else {
-                    kwargs_name = cls_annotation.kwargs();
-                }
-
-                attrs.put(
-                        method_name,
-                        new org.python.types.Function(
-                                method,
-                                cls_annotation.args(),
-                                cls_annotation.default_args(),
-                                varargs_name,
-                                cls_annotation.kwonlyargs(),
-                                kwargs_name
-                        )
-                );
+                attrs.put(method_name, org.Python.createFunction(cls_annotation, method));
             }
         }
+    }
+
+    private static org.python.types.Function createFunction(org.python.Method cls_annotation, java.lang.reflect.Method method) {
+        java.lang.String varargs_name;
+        java.lang.String kwargs_name;
+
+        if (cls_annotation.varargs().equals("")) {
+            varargs_name = null;
+        } else {
+            varargs_name = cls_annotation.varargs();
+        }
+
+        if (cls_annotation.kwargs().equals("")) {
+            kwargs_name = null;
+        } else {
+            kwargs_name = cls_annotation.kwargs();
+        }
+
+        return new org.python.types.Function(
+                method,
+                cls_annotation.args(),
+                cls_annotation.default_args(),
+                varargs_name,
+                cls_annotation.kwonlyargs(),
+                kwargs_name);
     }
 
     public static java.lang.String typeName(java.lang.Class cls) {
@@ -260,7 +339,7 @@ public class Python {
     public static org.python.Object[] addToArgs(org.python.Object[] args, org.python.Object varargs) {
         java.util.List<org.python.Object> temp_list = new java.util.ArrayList<org.python.Object>();
         try {
-            org.python.Iterable iter = varargs.__iter__();
+            org.python.Object iter = varargs.__iter__();
             while (true) {
                 org.python.Object item = iter.__next__();
                 temp_list.add(item);
@@ -290,7 +369,7 @@ public class Python {
         // FIXME: Once we have dictionary iterators, we should use an iteration-based
         // rollout, rather than casting to Dict.
         // try {
-        //     org.python.Iterable iter = varkwargs.__iter__();
+        //     org.python.Object iter = varkwargs.__iter__();
         //     while (true) {
         //         org.python.Object key = iter.__next__()
         //         java.lang.String key_string = ((org.python.types.Str) key).value;
@@ -326,9 +405,16 @@ public class Python {
                     "returns package A when fromlist is empty, but its submodule B when\n" +
                     "fromlist is not empty.  Level is used to determine whether to perform\n" +
                     "absolute or relative imports. 0 is absolute while a positive number\n" +
-                    "is the number of parent directories to search relative to the current module.\n"
+                    "is the number of parent directories to search relative to the current module.\n",
+            args = {"name"},
+            default_args = {"globals", "locals", "fromlist", "level"}
     )
-    public static org.python.Object __import__() {
+    public static org.python.Object __import__(
+            org.python.Object name,
+            org.python.Object globals,
+            org.python.Object locals,
+            org.python.Object fromlist,
+            org.python.Object level) {
         throw new org.python.exceptions.NotImplementedError("Builtin function '__import__' not implemented");
     }
 
@@ -354,17 +440,17 @@ public class Python {
             args = {"iterable"}
     )
     public static org.python.types.Bool all(org.python.Object iterable) {
-        org.python.Iterable iter = org.Python.iter(iterable);
+        org.python.Object iter = org.Python.iter(iterable);
         try {
             while (true) {
                 org.python.Object next = iter.__next__();
                 if (!next.toBoolean()) {
-                    return new org.python.types.Bool(false);
+                    return org.python.types.Bool.FALSE;
                 }
             }
         } catch (org.python.exceptions.StopIteration si) {
         }
-        return new org.python.types.Bool(true);
+        return org.python.types.Bool.TRUE;
     }
 
     @org.python.Method(
@@ -375,17 +461,17 @@ public class Python {
             args = {"iterable"}
     )
     public static org.python.types.Bool any(org.python.Object iterable) {
-        org.python.Iterable iter = org.Python.iter(iterable);
+        org.python.Object iter = org.Python.iter(iterable);
         try {
             while (true) {
                 org.python.Object next = iter.__next__();
                 if (next.toBoolean()) {
-                    return new org.python.types.Bool(true);
+                    return org.python.types.Bool.TRUE;
                 }
             }
         } catch (org.python.exceptions.StopIteration si) {
         }
-        return new org.python.types.Bool(false);
+        return org.python.types.Bool.FALSE;
     }
 
     @org.python.Method(
@@ -394,9 +480,10 @@ public class Python {
                     "As repr(), return a string containing a printable representation of an\n" +
                     "object, but escape the non-ASCII characters in the string returned by\n" +
                     "repr() using \\x, \\u or \\U escapes.  This generates a string similar\n" +
-                    "to that returned by repr() in Python 2.\n"
+                    "to that returned by repr() in Python 2.\n",
+            args = {"object"}
     )
-    public static org.python.types.Str ascii() {
+    public static org.python.types.Str ascii(org.python.Object object) {
         throw new org.python.exceptions.NotImplementedError("Builtin function 'ascii' not implemented");
     }
 
@@ -436,7 +523,7 @@ public class Python {
             args = {"object"}
     )
     public static org.python.types.Bool callable(org.python.Object object) {
-        return new org.python.types.Bool(org.python.Callable.class.isAssignableFrom(object.getClass()));
+        return org.python.types.Bool.getBool(org.python.Callable.class.isAssignableFrom(object.getClass()));
     }
 
     @org.python.Method(
@@ -485,9 +572,10 @@ public class Python {
                     "object is passed as the implied first argument.\n" +
                     "\n" +
                     "Class methods are different than C++ or Java static methods.\n" +
-                    "If you want those, see the staticmethod builtin.\n"
+                    "If you want those, see the staticmethod builtin.\n",
+            args = {"function"}
     )
-    public static org.python.Object classmethod() {
+    public static org.python.Object classmethod(org.python.Object function) {
         throw new org.python.exceptions.NotImplementedError("Builtin function 'classmethod' not implemented");
     }
 
@@ -504,9 +592,16 @@ public class Python {
                     "The dont_inherit argument, if non-zero, stops the compilation inheriting\n" +
                     "the effects of any future statements in effect in the code calling\n" +
                     "compile; if absent or zero these statements do influence the compilation,\n" +
-                    "in addition to any features explicitly specified.\n"
+                    "in addition to any features explicitly specified.\n",
+            args = {"source", "filename", "mode"},
+            default_args = {"flags", "dont_inherit"}
     )
-    public static org.python.Object compile() {
+    public static org.python.Object compile(
+            org.python.Object source,
+            org.python.Object filename,
+            org.python.Object mode,
+            org.python.Object flags,
+            org.python.Object dont_inherit) {
         throw new org.python.exceptions.NotImplementedError("Builtin function 'compile' not implemented");
     }
 
@@ -605,11 +700,11 @@ public class Python {
                     "(0, seq[0]), (1, seq[1]), (2, seq[2]), ...\n",
             default_args = {"items", "start"}
     )
-    public static org.python.Iterable enumerate(org.python.Object items, org.python.Object start) {
+    public static org.python.Object enumerate(org.python.Object items, org.python.Object start) {
         if (items == null) {
             throw new org.python.exceptions.TypeError("Required argument 'iterable' (pos 1) not found");
         }
-        org.python.Object index = new org.python.types.Int(0);
+        org.python.Object index = org.python.types.Int.getInt(0);
         if (start != null) {
             try {
                 index = (org.python.types.Int) start; // will throw error if start can't be converted to Int
@@ -617,10 +712,10 @@ public class Python {
                 throw new org.python.exceptions.TypeError("'" + start.typeName() + "' object cannot be interpreted as an integer");
             }
         }
-        org.python.Object increment = new org.python.types.Int(1);
+        org.python.Object increment = org.python.types.Int.getInt(1);
         java.util.List enumList = new java.util.ArrayList();
         try {
-            org.python.Iterable iter = org.Python.iter(items);
+            org.python.Object iter = org.Python.iter(items);
             while (true) {
                 try {
                     java.util.List tuple = new java.util.ArrayList();
@@ -647,9 +742,11 @@ public class Python {
                     "or a code object as returned by compile().\n" +
                     "The globals must be a dictionary and locals can be any mapping,\n" +
                     "defaulting to the current globals and locals.\n" +
-                    "If only globals is given, locals defaults to it.\n"
+                    "If only globals is given, locals defaults to it.\n",
+            args = {"source"},
+            default_args = {"globals", "locals"}
     )
-    public static org.python.Object eval() {
+    public static org.python.Object eval(org.python.Object source, org.python.Object globals, org.python.Object locals) {
         throw new org.python.exceptions.NotImplementedError("Builtin function 'eval' not implemented");
     }
 
@@ -659,9 +756,11 @@ public class Python {
                     "Read and execute code from an object, which can be a string or a code\n" +
                     "object.\n" +
                     "The globals and locals are dictionaries, defaulting to the current\n" +
-                    "globals and locals.  If only globals is given, locals defaults to it.\n"
+                    "globals and locals.  If only globals is given, locals defaults to it.\n",
+            args = {"object"},
+            default_args = {"globals", "locals"}
     )
-    public static org.python.Object exec() {
+    public static org.python.Object exec(org.python.Object object, org.python.Object globals, org.python.Object locals) {
         throw new org.python.exceptions.NotImplementedError("Builtin function 'exec' not implemented");
     }
 
@@ -739,9 +838,9 @@ public class Python {
         }
         try {
             object.__getattribute__(name);
-            return new org.python.types.Bool(true);
+            return org.python.types.Bool.TRUE;
         } catch (org.python.exceptions.AttributeError ae) {
-            return new org.python.types.Bool(false);
+            return org.python.types.Bool.FALSE;
         } catch (org.python.exceptions.TypeError te) {
             throw new org.python.exceptions.TypeError(te.getMessage().replace("__hasattribute__", "hasattr"));
         }
@@ -760,9 +859,10 @@ public class Python {
 
     @org.python.Method(
             __doc__ = "Define the built-in 'help'." +
-                    "This is a wrapper around pydoc.help (with a twist).\n"
+                    "This is a wrapper around pydoc.help (with a twist).\n",
+            default_args = {"object"}
     )
-    public static org.python.Object help() {
+    public static org.python.Object help(org.python.Object object) {
         throw new org.python.exceptions.NotImplementedError("Builtin function 'help' not implemented");
     }
 
@@ -801,7 +901,7 @@ public class Python {
             args = {"object"}
     )
     public static org.python.types.Int id(org.python.Object object) {
-        return new org.python.types.Int(System.identityHashCode(object));
+        return org.python.types.Int.getInt(System.identityHashCode(object));
     }
 
     @org.python.Method(
@@ -870,22 +970,22 @@ public class Python {
             java.util.List<org.python.Object> target_classes = ((org.python.types.Tuple) classinfo_or_tuple).value;
             for (org.python.Object target_klass: target_classes) {
                 if (org.Python.issubclass(klass, target_klass).toBoolean()) {
-                    return new org.python.types.Bool(true);
+                    return org.python.types.Bool.TRUE;
                 }
             }
-            return new org.python.types.Bool(false);
+            return org.python.types.Bool.FALSE;
         } else if (classinfo_or_tuple instanceof org.python.types.Type) {
             org.python.types.Type klass_obj = (org.python.types.Type) klass;
             if (klass == classinfo_or_tuple) {
-                return new org.python.types.Bool(true);
+                return org.python.types.Bool.TRUE;
             } else if (klass_obj.__dict__.get("__bases__") != null) {
                 for (org.python.Object base: ((org.python.types.Tuple) klass_obj.__dict__.get("__bases__")).value) {
                     if (base == classinfo_or_tuple || org.Python.issubclass(base, classinfo_or_tuple).value) {
-                        return new org.python.types.Bool(true);
+                        return org.python.types.Bool.TRUE;
                     }
                 }
             }
-            return new org.python.types.Bool(false);
+            return org.python.types.Bool.FALSE;
         } else {
             throw new org.python.exceptions.TypeError("issubclass() arg 2 must be a class or tuple of classes");
         }
@@ -901,7 +1001,7 @@ public class Python {
             args = {"iterable"},
             default_args = {"sentinel"}
     )
-    public static org.python.Iterable iter(org.python.Object iterable, org.python.Object sentinel) {
+    public static org.python.Object iter(org.python.Object iterable, org.python.Object sentinel) {
         if (sentinel == null) {
             try {
                 return iterable.__iter__();
@@ -914,7 +1014,7 @@ public class Python {
         }
     }
 
-    public static org.python.Iterable iter(org.python.Object iterable) {
+    public static org.python.Object iter(org.python.Object iterable) {
         return org.Python.iter(iterable, null);
     }
 
@@ -982,7 +1082,7 @@ public class Python {
             throw new org.python.exceptions.TypeError("max expected 1 arguments, got 0");
         } else if (args.value.size() == 1) {
             try {
-                org.python.Iterable iter = args.value.get(0).__iter__();
+                org.python.Object iter = args.value.get(0).__iter__();
                 max_value = iter.__next__();
                 max_key_value = applyKey(max_value, key);
 
@@ -1027,11 +1127,7 @@ public class Python {
     }
 
     private static boolean compareKeys(org.python.Object first, org.python.Object second) {
-        return org.python.types.Object.__cmp__(
-                    first,
-                    second,
-                    org.python.types.Object.CMP_OP.GT
-                ).toBoolean();
+        return org.python.types.Object.__gt__(first, second).toBoolean();
     }
 
     @org.python.Method(
@@ -1055,7 +1151,7 @@ public class Python {
             throw new org.python.exceptions.TypeError("min expected 1 arguments, got 0");
         } else if (args.value.size() == 1) {
             try {
-                org.python.Iterable iter = args.value.get(0).__iter__();
+                org.python.Object iter = args.value.get(0).__iter__();
                 min_value = iter.__next__();
                 min_key_value = applyKey(min_value, key);
 
@@ -1109,18 +1205,16 @@ public class Python {
             default_args = {"default"}
     )
     public static org.python.Object next(org.python.Object iterator, org.python.Object default_) {
-        if (iterator instanceof org.python.Iterable) {
-            try {
-                return ((org.python.Iterable) iterator).__next__();
-            } catch (org.python.exceptions.StopIteration si) {
-                if (default_ != null) {
-                    return default_;
-                } else {
-                    throw si;
-                }
-            }
-        } else {
+        try {
+            return ((org.python.Object) iterator).__next__();
+        } catch (org.python.exceptions.AttributeError ae) {
             throw new org.python.exceptions.TypeError("'" + iterator.typeName() + "' object is not an iterator");
+        } catch (org.python.exceptions.StopIteration si) {
+            if (default_ != null) {
+                return default_;
+            } else {
+                throw si;
+            }
         }
     }
 
@@ -1298,7 +1392,7 @@ public class Python {
         try {
             int length = ((org.python.types.Str) c).value.length();
             if (length == 1) {
-                return new org.python.types.Int((int) (((org.python.types.Str) c.__str__()).value).charAt(0));
+                return org.python.types.Int.getInt((int) (((org.python.types.Str) c.__str__()).value).charAt(0));
             } else {
                 throw new org.python.exceptions.TypeError("ord() expected a character, but string of length " + length + " found");
             }
@@ -1449,18 +1543,36 @@ public class Python {
     @org.python.Method(
             __doc__ = "reversed(sequence) -> reverse iterator over values of the sequence" +
                     "\n" +
-                    "Return a reverse iterator\n"
+                    "Return a reverse iterator\n",
+            args = {"sequence"}
     )
-    public static org.python.Iterable reversed(
-            java.util.List<org.python.Object> args,
-            java.util.Map<java.lang.String, org.python.Object> kwargs) {
-        if (kwargs != null && kwargs.size() != 0) {
-            throw new org.python.exceptions.TypeError("reversed() takes no keyword arguments");
+    public static org.python.Object reversed(org.python.Object sequence) {
+        // Try the __reversed__() protocol.
+        try {
+            return sequence.__reversed__();
+        } catch (org.python.exceptions.AttributeError ae) {
         }
-        if (args == null || args.size() != 1) {
-            throw new org.python.exceptions.TypeError("reversed() takes exactly one argument (" + args.size() + " given)");
+
+        if (!(sequence instanceof org.python.types.Dict)) {
+            try {
+                // Check the argument really is a sequence.
+                // There probably should be a better way to introspect for these
+                // methods without catually calling them, but this will do for now.
+                try {
+                    sequence.__getitem__(org.python.types.Int.getInt(0));
+                } catch (org.python.exceptions.IndexError e) {
+                }
+
+                // Wrap the sequence into a generic reverse iterator.
+                return new org.python.types.Reversed(sequence);
+            } catch (org.python.exceptions.AttributeError | org.python.exceptions.TypeError e) {
+            }
         }
-        return args.get(0).__reversed__();
+
+        if (org.Python.VERSION < 0x03060000) {
+            throw new org.python.exceptions.TypeError("argument to reversed() must be a sequence");
+        }
+        throw new org.python.exceptions.TypeError("'" + sequence.typeName() + "' object is not reversible");
     }
 
     @org.python.Method(
@@ -1474,7 +1586,7 @@ public class Python {
     )
     public static org.python.Object round(org.python.Object number, org.python.Object ndigits) {
         if (ndigits == null) {
-            return number.__round__(new org.python.types.Int(0));
+            return number.__round__(org.python.types.Int.getInt(0));
         }
         return number.__round__(ndigits);
     }
@@ -1529,11 +1641,11 @@ public class Python {
         public int compare(org.python.Object o1, org.python.Object o2) {
             o1 = applyKey(o1, key);
             o2 = applyKey(o2, key);
-            org.python.Object result = org.python.types.Object.__cmp_bool__(o1, o2, org.python.types.Object.CMP_OP.LT);
+            org.python.Object result = org.python.types.Object.__lt__(o1, o2);
             if (result.toBoolean()) {
                 return reverse ? 1 : -1;
             }
-            result = org.python.types.Object.__cmp_bool__(o2, o1, org.python.types.Object.CMP_OP.LT);
+            result = org.python.types.Object.__lt__(o2, o1);
             if (result.toBoolean()) {
                 return reverse ? -1 : 1;
             }
@@ -1562,9 +1674,9 @@ public class Python {
             return new org.python.types.List();
         } else {
             if (reverse == null) {
-                reverse = new org.python.types.Bool(false);
+                reverse = org.python.types.Bool.FALSE;
             }
-            org.python.Iterable iterator = org.Python.iter(iterable);
+            org.python.Object iterator = org.Python.iter(iterable);
             java.util.List<org.python.Object> generated = new java.util.ArrayList<org.python.Object>();
             try {
                 while (true) {
@@ -1598,9 +1710,10 @@ public class Python {
                     "(e.g. C().f()).  The instance is ignored except for its class.\n" +
                     "\n" +
                     "Static methods in Python are similar to those found in Java or C++.\n" +
-                    "For a more advanced concept, see the classmethod builtin.\n"
+                    "For a more advanced concept, see the classmethod builtin.\n",
+            args = {"function"}
     )
-    public static org.python.Object staticmethod() {
+    public static org.python.Object staticmethod(org.python.Object function) {
         throw new org.python.exceptions.NotImplementedError("Builtin function 'staticmethod' not implemented");
     }
 
@@ -1618,10 +1731,10 @@ public class Python {
         if (start != null) {
             value = start;
         } else {
-            value = new org.python.types.Int(0);
+            value = org.python.types.Int.getInt(0);
         }
 
-        org.python.Iterable iterator = org.Python.iter(iterable);
+        org.python.Object iterator = org.Python.iter(iterable);
         while (true) {
             org.python.Object next;
             try {
@@ -1680,19 +1793,19 @@ public class Python {
         int count = 0;
         if (item != null) {
             count = 1;
-            org.python.Iterable iter;
+            org.python.Object iter;
             try {
                 iter = org.Python.iter(item);
             } catch (org.python.exceptions.TypeError e) {
                 throw new org.python.exceptions.TypeError("zip argument #" + count + " must support iteration");
             }
-            java.util.List<org.python.Iterable> iters = new java.util.ArrayList<org.python.Iterable>();
+            java.util.List<org.python.Object> iters = new java.util.ArrayList<org.python.Object>();
             iters.add(iter);
             if (moreItems != null) {
-                org.python.Iterable tupIter = org.Python.iter(moreItems);
+                org.python.Object tupIter = org.Python.iter(moreItems);
                 while (true) {
                     count++;
-                    org.python.Iterable it;
+                    org.python.Object it;
                     org.python.Object obj;
                     try {
                         obj = tupIter.__next__();
@@ -1712,7 +1825,7 @@ public class Python {
                 java.util.List tuple = new java.util.ArrayList();
                 for (int i = 0; i < count - 1; i++) {
                     try {
-                        org.python.Iterable it = iters.get(i);
+                        org.python.Object it = iters.get(i);
                         tuple.add(it.__next__());
                     } catch (IndexOutOfBoundsException e) {
                         flag = true;

@@ -203,30 +203,45 @@ class DictTests(TranspileTestCase):
             print(x.get(1))
             print(x.get(2))
             print(x.get(3,4))
+
+            class MyClass:
+                pass
+
+            obj = MyClass()
+            print(x.get(obj))
             """)
 
         # check for unhashable type errors
         self.assertCodeExecution("""
             x = {1: 2}
-            try:
-                print(x.get([]))
-            except TypeError as err:
-                print(err)
-            try:
-                print(x.get([], 1))
-            except TypeError as err:
-                print(err)
-            """)
 
-        # check for unhashable type errors
-        self.assertCodeExecution("""
-            x = {1: 2}
             try:
                 print(x.get([]))
             except TypeError as err:
                 print(err)
+
             try:
                 print(x.get([], 1))
+            except TypeError as err:
+                print(err)
+
+            try:
+                print(x.get(list([1])))
+            except TypeError as err:
+                print(err)
+
+            try:
+                print(x.get(set([1, 2, 3])))
+            except TypeError as err:
+                print(err)
+
+            try:
+                print(x.get(iter([1, 2, 3])))
+            except TypeError as err:
+                print(err)
+
+            try:
+                print(x.get(slice(3)))
             except TypeError as err:
                 print(err)
             """)
@@ -256,7 +271,7 @@ class DictTests(TranspileTestCase):
     def test_fromkeys(self):
         self.assertCodeExecution("""
             keys = [1, 2]
-            print({}.fromkeys(keys))
+            print(dict.fromkeys(keys))
             """)
 
         # non-iterable error test
@@ -264,7 +279,7 @@ class DictTests(TranspileTestCase):
             keys = 1
             value = 2
             try:
-                print({}.fromkeys(keys, value))
+                print(dict.fromkeys(keys, value))
             except TypeError as err:
                 print(err)
             """)
@@ -282,18 +297,186 @@ class DictTests(TranspileTestCase):
         self.assertCodeExecution("""
             keys = [[1], 2]
             try:
-                print({}.fromkeys(keys))
+                print(dict.fromkeys(keys))
             except TypeError as err:
                 print(err)
             """)
+
+    def test_update(self):
+        self.assertCodeExecution("""
+            a = {}
+            a.update([('a', 1), ('b', 2)])
+            print(sorted(a))
+            b = {}
+            b.update({'a': 1, 'b':2})
+            print(sorted(b))
+            c = {}
+            c.update(a=1, b=2)
+            print(sorted(c))
+        """)
+
+        self.assertCodeExecution("""
+            try:
+                a = {}
+                a.update([('a', 1, 2), ('b',2)])
+                print('An error should have been raised!')
+            except ValueError:
+                print('Received a ValueError as expected')
+        """)
+
+        self.assertCodeExecution("""
+            try:
+                a = {}
+                a.update('1')
+                print('An error should have been raised')
+            except ValueError:
+                print('Received a ValueError as expected')
+        """)
+
+        self.assertCodeExecution("""
+            try:
+                a = {}
+                a.update(1)
+                print('An error should have been raised')
+            except TypeError:
+                print('Received a TypeError as expected')
+        """)
+
+        self.assertCodeExecution("""
+            try:
+                a = {}
+                x = set([1, 2])
+                a.update(x)
+                print('An error should have been raised')
+            except TypeError:
+                print('Received a TypeError as expected')
+        """)
 
     @expectedFailure
     def test_fromkeys_missing_iterable(self):
         self.assertCodeExecution("""
             try:
-                print({}.fromkeys())
+                print(dict.fromkeys())
             except TypeError as err:
                 print(err)
+            """)
+
+    def test_values(self):
+        self.assertCodeExecution("""
+            x = {1 : 1,2 : 2,3 : 3}
+            y = x.values()
+            print(type(y))
+            print(len(y))
+            print(3 in y)
+            print(42 not in y)
+            if y:
+                print('Working as expected')
+            s = 0
+            for i in y:
+                s += i
+            print(s)
+            """)
+
+        self.assertCodeExecution("""
+            try:
+                x = {1 : 1,2 : 2}
+                print(x.values() * 'a')
+                print('A TypeError should have been raised')
+            except TypeError as err:
+                print(err)
+            """)
+
+        self.assertCodeExecution("""
+            try:
+                x = {1 : 1,2 : 2,3 : 3}
+                y = x.values()
+                print(y[0])
+                print('A TypeError should have been raised')
+            except TypeError as err:
+                print(err)
+            """)
+
+        self.assertCodeExecution("""
+            try:
+                x = {1 : 1,2 : 2,3 : 3}
+                y = x.values()
+                print(y['a'])
+                print('A TypeError should have been raised')
+            except TypeError as err:
+                print(err)
+            """)
+
+        self.assertCodeExecution("""
+            try:
+                x = {1 : 1,2 : 2,3 : 3}
+                y = x.values()
+                y[0] = 7
+                print('A TypeError should have been raised')
+            except TypeError as err:
+                print(err)
+            """)
+
+        self.assertCodeExecution("""
+            try:
+                x = {1 : 1,2 : 2,3 : 3}
+                y = x.values()
+                del y[0]
+                print('A TypeError should have been raised')
+            except TypeError as err:
+                print(err)
+            """)
+
+        self.assertCodeExecution("""
+            try:
+                x = {1 : 1,2 : 2,3 : 3}
+                y = x.values()
+                print(+y)
+                print('A TypeError should have been raised')
+            except TypeError as err:
+                print(err)
+            """)
+
+        self.assertCodeExecution("""
+            try:
+                x = {1 : 1,2 : 2,3 : 3}
+                y = x.values()
+                print(-y)
+                print('A TypeError should have been raised')
+            except TypeError as err:
+                print(err)
+            """)
+
+        self.assertCodeExecution("""
+            try:
+                x = {1 : 1,2 : 2,3 : 3}
+                y = x.values()
+                print(~y)
+                print('A TypeError should have been raised')
+            except TypeError as err:
+                print(err)
+            """)
+
+    def test_items(self):
+        self.assertCodeExecution("""
+            x = {1 : 1,2 : 2,3 : 3}
+            x2 = {1 : 1,2 : 2,3 : 3,4 : 4}
+            y = x.items()
+            y2 = x2.items()
+            print(len(y))
+            print((1,1) in y)
+            print((1,2) not in y)
+            s1 = 0
+            s2 = 0
+            for i,j in y:
+                s1 += i
+                s2 += j
+            print(s1)
+            print(s2)
+            s = {(1,1),(1,2),(2,2),(2,3)}
+            print(len(y & s))
+            print(len(y | s))
+            print(len(y ^ s))
+            print(len(y - s))
             """)
 
 
@@ -305,20 +488,11 @@ class BinaryDictOperationTests(BinaryOperationTestCase, TranspileTestCase):
     data_type = 'dict'
 
     not_implemented = [
-        'test_modulo_complex',
-
-        'test_multiply_bytearray',
-
         'test_subscr_bytearray',
         'test_subscr_class',
         'test_subscr_complex',
-        'test_subscr_slice',
     ]
 
 
 class InplaceDictOperationTests(InplaceOperationTestCase, TranspileTestCase):
     data_type = 'dict'
-
-    not_implemented = [
-        'test_modulo_complex',
-    ]

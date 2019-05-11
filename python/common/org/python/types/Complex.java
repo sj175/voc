@@ -18,12 +18,11 @@ public class Complex extends org.python.types.Object {
         return this;
     }
 
-    public org.python.Object byValue() {
-        throw new org.python.exceptions.AttributeError("type object 'complex' has no attribute 'byValue'");
-    }
-
     public int hashCode() {
-        return this.hashCode();
+        java.util.ArrayList<org.python.types.Float> pair = new java.util.ArrayList<org.python.types.Float>();
+        pair.add(real);
+        pair.add(imag);
+        return pair.hashCode();
     }
 
     public Complex(org.python.types.Float real_val, org.python.types.Float imag_val) {
@@ -159,7 +158,7 @@ public class Complex extends org.python.types.Object {
     // }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return repr(self)."
     )
     public org.python.Object __repr__() {
         java.lang.StringBuilder buffer = new java.lang.StringBuilder();
@@ -190,14 +189,14 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "complex.__format__() -> str\n\nConvert to a string according to format_spec."
     )
     public org.python.Object __format__(org.python.Object format_string) {
         throw new org.python.exceptions.NotImplementedError("complex.__format__ has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self<value.",
             args = {"other"}
     )
     public org.python.Object __lt__(org.python.Object other) {
@@ -205,7 +204,7 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self<=value.",
             args = {"other"}
     )
     public org.python.Object __le__(org.python.Object other) {
@@ -213,26 +212,26 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self==value.",
             args = {"other"}
     )
     public org.python.Object __eq__(org.python.Object other) {
         if (other instanceof org.python.types.Complex) {
             org.python.types.Complex other_obj = (org.python.types.Complex) other;
-            return new org.python.types.Bool(
+            return org.python.types.Bool.getBool(
                     ((org.python.types.Bool) this.real.__eq__(other_obj.real)).value
                     && ((org.python.types.Bool) this.imag.__eq__(other_obj.imag)).value);
         } else if (other instanceof org.python.types.Float || other instanceof org.python.types.Int
                 || other instanceof org.python.types.Bool) {
-            return new org.python.types.Bool(
+            return org.python.types.Bool.getBool(
                     ((org.python.types.Bool) this.real.__eq__(other)).value
-                    && ((org.python.types.Bool) this.imag.__eq__(new org.python.types.Int(0))).value);
+                    && ((org.python.types.Bool) this.imag.__eq__(org.python.types.Int.getInt(0))).value);
         }
         return org.python.types.NotImplementedType.NOT_IMPLEMENTED;
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self>value.",
             args = {"other"}
     )
     public org.python.Object __gt__(org.python.Object other) {
@@ -240,7 +239,7 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = "",
+            __doc__ = "Return self>=value.",
             args = {"other"}
     )
     public org.python.Object __ge__(org.python.Object other) {
@@ -248,11 +247,11 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "self != 0"
     )
     public org.python.types.Bool __bool__() {
         // A complex number is "truthy" if either its real component or imaginary component are > 0
-        return new org.python.types.Bool((this.real.value != 0.0) || (this.imag.value != 0.0));
+        return org.python.types.Bool.getBool((this.real.value != 0.0) || (this.imag.value != 0.0));
     }
 
     public boolean __setattr_null(java.lang.String name, org.python.Object value) {
@@ -261,14 +260,15 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "__dir__() -> list\ndefault dir() implementation"
     )
     public org.python.types.List __dir__() {
         throw new org.python.exceptions.NotImplementedError("complex.__dir__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self+value.",
+            args = {"other"}
     )
 
     public org.python.Object __add__(org.python.Object other) {
@@ -287,7 +287,8 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self-value.",
+            args = {"other"}
     )
     public org.python.Object __sub__(org.python.Object other) {
         if (other instanceof org.python.types.Int || other instanceof org.python.types.Float) {
@@ -302,7 +303,7 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return str(self)."
     )
     public org.python.Object __str__() {
         if (this.real.value != 0.0 || this.real.isNegativeZero()) {
@@ -313,16 +314,22 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self*value.",
+            args = {"other"}
     )
-    public org.python.Object __getitem__(org.python.Object other) {
-        throw new org.python.exceptions.TypeError("'complex' object is not subscriptable");
+    public org.python.Object __mul__(org.python.Object other) {
+        return multiply(other, "*");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self*=value.",
+            args = {"other"}
     )
-    public org.python.Object __mul__(org.python.Object other) {
+    public org.python.Object __imul__(org.python.Object other) {
+        return multiply(other, "*=");
+    }
+
+    private org.python.Object multiply(org.python.Object other, String operationName) throws org.python.exceptions.TypeError {
         if (other instanceof org.python.types.List || other instanceof org.python.types.Str || other instanceof org.python.types.Tuple || other instanceof org.python.types.Bytes || other instanceof org.python.types.ByteArray) {
             throw new org.python.exceptions.TypeError("can't multiply sequence by non-int of type '" + this.typeName() + "'");
         } else if (other instanceof org.python.types.Bool) {
@@ -352,11 +359,12 @@ public class Complex extends org.python.types.Object {
             org.python.types.Float imag = (org.python.types.Float) this.real.__mul__(other_obj.imag).__add__(this.imag.__mul__(other_obj.real));
             return new org.python.types.Complex(real, imag);
         }
-        throw new org.python.exceptions.TypeError("unsupported operand type(s) for *: 'complex' and '" + other.typeName() + "'");
+        throw new org.python.exceptions.TypeError("unsupported operand type(s) for " + operationName + ": 'complex' and '" + other.typeName() + "'");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self/value.",
+            args = {"other"}
     )
     public org.python.Object __truediv__(org.python.Object other) {
         if (other instanceof org.python.types.Int) {
@@ -370,7 +378,7 @@ public class Complex extends org.python.types.Object {
             if (!((Bool) other).value) {
                 throw new org.python.exceptions.ZeroDivisionError("complex division by zero");
             }
-            return new org.python.types.Complex(this.real, this.imag);
+            return this;
         } else if (other instanceof org.python.types.Float) {
             if (((Float) other).value == 0.0) {
                 throw new org.python.exceptions.ZeroDivisionError("complex division by zero");
@@ -408,24 +416,43 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self//value.",
+            args = {"other"}
     )
     public org.python.Object __floordiv__(org.python.Object other) {
         throw new org.python.exceptions.TypeError("can't take floor of complex number.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self//=value.",
+            args = {"other"}
+    )
+    public org.python.Object __ifloordiv__(org.python.Object other) {
+        throw new org.python.exceptions.TypeError("can't take floor of complex number.");
+    }
+
+    @org.python.Method(
+            __doc__ = "Return self%value.",
+            args = {"other"}
     )
     public org.python.Object __mod__(org.python.Object other) {
         throw new org.python.exceptions.TypeError("can't mod complex numbers.");
     }
 
+
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return self%=value ",
+            args = {"other"}
+    )
+    public org.python.Object __imod__(org.python.Object other) {
+        throw new org.python.exceptions.TypeError("can't mod complex numbers.");
+    }
+
+    @org.python.Method(
+            __doc__ = "Return divmod(self, value).",
+            args = {"other"}
     )
     public org.python.Object __divmod__(org.python.Object other) {
-
         throw new org.python.exceptions.TypeError("can't take floor or mod of complex number.");
     }
 
@@ -439,7 +466,7 @@ public class Complex extends org.python.types.Object {
             if (b.imag.value != 0. || b.real.value < 0.) {
                 throw new org.python.exceptions.ZeroDivisionError("0.0 to a negative or complex power");
             }
-            r.real.value = 1.0;
+            r.real.value = 0.0;
             r.imag.value = 0.0;
         } else {
             vabs = Math.hypot(this.real.value, this.imag.value);
@@ -466,13 +493,15 @@ public class Complex extends org.python.types.Object {
                 r = (org.python.types.Complex) r.__mul__(p);
             }
             mask <<= 1;
-            p = (Complex) p.__mul__(p);
+            p = (org.python.types.Complex) p.__mul__(p);
         }
         return r;
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return pow(self, value, mod).",
+            args = {"other"},
+            default_args = {"modulo"}
     )
     public org.python.Object __pow__(org.python.Object other, org.python.Object modulo) {
         if (modulo == null) {
@@ -504,147 +533,165 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __lshift__(org.python.Object other) {
         throw new org.python.exceptions.TypeError("unsupported operand type(s) for <<: 'complex' and '" + other.typeName() + "'");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __rshift__(org.python.Object other) {
         throw new org.python.exceptions.TypeError("unsupported operand type(s) for >>: 'complex' and '" + other.typeName() + "'");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __and__(org.python.Object other) {
         throw new org.python.exceptions.TypeError("unsupported operand type(s) for &: 'complex' and '" + other.typeName() + "'");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __xor__(org.python.Object other) {
         throw new org.python.exceptions.TypeError("unsupported operand type(s) for ^: 'complex' and '" + other.typeName() + "'");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __or__(org.python.Object other) {
         throw new org.python.exceptions.TypeError("unsupported operand type(s) for |: 'complex' and '" + other.typeName() + "'");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return value+self.",
+            args = {"other"}
     )
     public org.python.Object __radd__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__radd__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return value-self.",
+            args = {"other"}
     )
     public org.python.Object __rsub__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rsub__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return value*self.",
+            args = {"other"}
     )
     public org.python.Object __rmul__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rmul__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return value/self.",
+            args = {"other"}
     )
     public org.python.Object __rtruediv__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rtruediv__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return value//self.",
+            args = {"other"}
     )
     public org.python.Object __rfloordiv__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rfloordiv__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return value%self.",
+            args = {"other"}
     )
     public org.python.Object __rmod__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rmod__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return divmod(value, self).",
+            args = {"other"}
     )
     public org.python.Object __rdivmod__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rdivmod__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return pow(value, self, mod).",
+            args = {"other"}
     )
     public org.python.Object __rpow__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rpow__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __rlshift__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rlshift__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __rrshift__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rrshift__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __rand__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rand__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __rxor__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__rxor__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "",
+            args = {"other"}
     )
     public org.python.Object __ror__(org.python.Object other) {
         throw new org.python.exceptions.NotImplementedError("complex.__ror__() has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "-self"
     )
     public org.python.Object __neg__() {
         return new org.python.types.Complex((org.python.types.Float) this.real.__neg__(), (org.python.types.Float) this.imag.__neg__());
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "+self"
     )
     public org.python.Object __pos__() {
-        return new org.python.types.Complex(this.real, this.imag);
+        return this;
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "abs(self)"
     )
     public org.python.Object __abs__() {
         double real = this.real.value;
@@ -653,28 +700,21 @@ public class Complex extends org.python.types.Object {
     }
 
     @org.python.Method(
-            __doc__ = ""
-    )
-    public org.python.Object __invert__() {
-        throw new org.python.exceptions.TypeError("bad operand type for unary ~: 'complex'");
-    }
-
-    @org.python.Method(
-            __doc__ = ""
+            __doc__ = "int(self)"
     )
     public org.python.Object __int__() {
         throw new org.python.exceptions.TypeError("can't convert complex to int");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "float(self)"
     )
     public org.python.Object __float__() {
         throw new org.python.exceptions.NotImplementedError("complex.__float__ has not been implemented.");
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "complex.conjugate() -> complex\n\nReturn the complex conjugate of its argument. (3-4j).conjugate() == 3+4j."
     )
     public org.python.Object conjugate() {
         return new org.python.types.Complex(this.real, (org.python.types.Float) this.imag.__neg__());

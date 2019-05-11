@@ -1,3 +1,5 @@
+from unittest import expectedFailure
+
 from .. utils import TranspileTestCase, UnaryOperationTestCase, BinaryOperationTestCase, InplaceOperationTestCase
 
 
@@ -42,6 +44,15 @@ class TupleTests(TranspileTestCase):
             x = (1, 2.5, "3", True, 5)
             print(x)
             """)
+
+    def test_setitem(self):
+        self.assertCodeExecution("""
+            x = (1, 2, 3, 4, 5)
+            try:
+                x[0] = "a"
+            except TypeError as err:
+                print(err)
+        """)
 
     def test_getitem(self):
         # Simple positive index
@@ -261,6 +272,28 @@ class TupleTests(TranspileTestCase):
                 print(err)
             """)
 
+    def test_no_arguments(self):
+        self.assertCodeExecution("""
+            x = tuple()
+            print(x)
+        """)
+
+    def test_too_many_arguments(self):
+        self.assertCodeExecution("""
+            try:
+                print(tuple(0, 1))
+            except TypeError as err:
+                print(err)
+        """)
+
+    def test_wrong_argument(self):
+        self.assertCodeExecution("""
+            try:
+                print(tuple(0))
+            except TypeError as err:
+                print(err)
+        """)
+
 
 class UnaryTupleOperationTests(UnaryOperationTestCase, TranspileTestCase):
     data_type = 'tuple'
@@ -269,32 +302,6 @@ class UnaryTupleOperationTests(UnaryOperationTestCase, TranspileTestCase):
 class BinaryTupleOperationTests(BinaryOperationTestCase, TranspileTestCase):
     data_type = 'tuple'
 
-    not_implemented = [
-        'test_modulo_complex',
-        'test_subscr_bool',
-        'test_subscr_slice',
-    ]
-
 
 class InplaceTupleOperationTests(InplaceOperationTestCase, TranspileTestCase):
     data_type = 'tuple'
-
-    not_implemented = [
-        'test_modulo_complex',
-
-        'test_multiply_bytearray',
-        'test_multiply_bytes',
-        'test_multiply_class',
-        'test_multiply_complex',
-        'test_multiply_dict',
-        'test_multiply_float',
-        'test_multiply_frozenset',
-        'test_multiply_slice',
-        'test_multiply_list',
-        'test_multiply_None',
-        'test_multiply_NotImplemented',
-        'test_multiply_range',
-        'test_multiply_set',
-        'test_multiply_str',
-        'test_multiply_tuple',
-    ]

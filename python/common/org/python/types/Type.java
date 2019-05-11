@@ -14,6 +14,23 @@ public class Type extends org.python.types.Object implements org.python.Callable
     public java.lang.reflect.Constructor constructor;
     public java.lang.Class klass;
 
+    private static org.python.Object[] emptyArgs;
+    private static java.util.Map<java.lang.String, org.python.Object> emptyKwargs;
+
+    private static org.python.Object[] getEmptyArgs() {
+        if (emptyArgs == null) {
+            emptyArgs = new org.python.Object[0];
+        }
+        return emptyArgs;
+    }
+
+    private static java.util.Map<java.lang.String, org.python.Object> getEmptyKwargs() {
+        if (emptyKwargs == null) {
+            emptyKwargs = new java.util.HashMap<java.lang.String, org.python.Object>();
+        }
+        return emptyKwargs;
+    }
+
     /**
      * Factory method to obtain Python classes from their Java counterparts
      */
@@ -28,13 +45,26 @@ public class Type extends org.python.types.Object implements org.python.Callable
 
             // Declare the type, and install it the known types list
             // (Replacing any placeholders)
-            python_type = declarePythonType(java_class);
+            python_type = declarePythonType(java_class, null, null, null);
 
             // Since we have a freshly created type, resolve
             // any placeholders that referenced this type.
             // These will have been created as a consequence of
             // calling the constructor for this type.
             placeholder.resolve(python_type);
+
+            // After object type is resolved, clean up subclasses that
+            // reference the placeholder.
+            if (java_class == org.python.types.Object.class) {
+                java.util.List<org.python.Object> bases = new java.util.ArrayList<org.python.Object>();
+                bases.add(python_type);
+                for (org.python.types.Type type : known_types.values()) {
+                    if (type.__dict__.get("__base__") == placeholder) {
+                        type.__dict__.put("__base__", python_type);
+                        type.__dict__.put("__bases__", new org.python.types.Tuple(bases));
+                    }
+                }
+            }
         }
         // System.out.println("GOT TYPE " + java_class + " " + python_type.origin);
         return python_type;
@@ -46,6 +76,20 @@ public class Type extends org.python.types.Object implements org.python.Callable
         } catch (ClassNotFoundException e) {
             throw new org.python.exceptions.RuntimeError("Unknown Class " + java_class_name);
         }
+    }
+
+    public static org.python.types.Type pythonType(java.lang.Class java_class, java.lang.Class base_java_class) {
+        org.python.types.Type python_type = pythonType(java_class);
+
+        if (base_java_class != null) {
+            org.python.types.Type base_python_type = known_types.get(base_java_class);
+            java.util.List<org.python.Object> bases = new java.util.ArrayList<org.python.Object>();
+            bases.add(base_python_type);
+            python_type.__dict__.put("__base__", base_python_type);
+            python_type.__dict__.put("__bases__", new org.python.types.Tuple(bases));
+        }
+
+        return python_type;
     }
 
     public static org.python.types.Type declarePythonType(
@@ -68,20 +112,6 @@ public class Type extends org.python.types.Object implements org.python.Callable
     }
 
     public static org.python.types.Type declarePythonType(
-            java.lang.String name,
-            java.util.List<org.python.Object> bases,
-            java.util.Map<java.lang.String, org.python.Object> dict
-    ) {
-        return org.python.types.Type.declarePythonType(org.python.types.Object.class, name, bases, dict);
-    }
-
-    public static org.python.types.Type declarePythonType(
-            java.lang.Class java_class
-    ) {
-        return org.python.types.Type.declarePythonType(java_class, null, null, null);
-    }
-
-    public static org.python.types.Type declarePythonType(
             java.lang.Class java_class,
             java.lang.String name,
             java.util.List<org.python.Object> bases,
@@ -98,7 +128,7 @@ public class Type extends org.python.types.Object implements org.python.Callable
                     || java_class.getName().startsWith("org.python.stdlib")) {
                 // System.out.println("    BUILTIN");
                 python_type = new org.python.types.Type(Origin.BUILTIN, java_class);
-                org.Python.initializeModule(java_class, python_type.__dict__);
+                org.Python.loadModule(java_class, python_type.__dict__);
             } else {
                 // System.out.println("    PYTHON");
                 python_type = new org.python.types.Type(Origin.PYTHON, java_class);
@@ -120,9 +150,18 @@ public class Type extends org.python.types.Object implements org.python.Callable
         }
 
         // Set __base__ and __bases__ for the type
-        if (bases != null && bases.size() > 0) {
+        if (java_class == org.python.types.Object.class) {
+            python_type.__dict__.put("__base__", org.python.types.NoneType.NONE);
+            python_type.__dict__.put("__bases__", new org.python.types.Tuple());
+        } else if (bases != null && bases.size() > 0) {
             python_type.__dict__.put("__base__", bases.get(0));
             python_type.__dict__.put("__bases__", new org.python.types.Tuple(bases));
+        } else {
+            org.python.types.Type base_python_type = known_types.get(org.python.types.Object.class);
+            java.util.List<org.python.Object> default_bases = new java.util.ArrayList<org.python.Object>();
+            default_bases.add(base_python_type);
+            python_type.__dict__.put("__base__", base_python_type);
+            python_type.__dict__.put("__bases__", new org.python.types.Tuple(default_bases));
         }
 
         // Update the dictionary of the type.
@@ -156,22 +195,22 @@ public class Type extends org.python.types.Object implements org.python.Callable
         } else {
             if (value.getClass() == java.lang.Boolean.TYPE
                     || value.getClass() == java.lang.Boolean.class) {
-                return new org.python.types.Bool((java.lang.Boolean) value);
+                return org.python.types.Bool.getBool((java.lang.Boolean) value);
             } else if (value.getClass() == java.lang.Byte.TYPE
                     || value.getClass() == java.lang.Byte.class) {
-                return new org.python.types.Int((java.lang.Byte) value);
+                return org.python.types.Int.getInt((java.lang.Byte) value);
             } else if (value.getClass() == java.lang.Character.TYPE
                     || value.getClass() == java.lang.Character.class) {
                 return new org.python.types.Str((java.lang.Character) value);
             } else if (value.getClass() == java.lang.Short.TYPE
                     || value.getClass() == java.lang.Short.class) {
-                return new org.python.types.Int((java.lang.Short) value);
+                return org.python.types.Int.getInt((java.lang.Short) value);
             } else if (value.getClass() == java.lang.Integer.TYPE
                     || value.getClass() == java.lang.Integer.class) {
-                return new org.python.types.Int((java.lang.Integer) value);
+                return org.python.types.Int.getInt((java.lang.Integer) value);
             } else if (value.getClass() == java.lang.Long.TYPE
                     || value.getClass() == java.lang.Long.class) {
-                return new org.python.types.Int((java.lang.Long) value);
+                return org.python.types.Int.getInt((java.lang.Long) value);
             } else if (value.getClass() == java.lang.Float.TYPE
                     || value.getClass() == java.lang.Float.class) {
                 return new org.python.types.Float((java.lang.Float) value);
@@ -225,16 +264,6 @@ public class Type extends org.python.types.Object implements org.python.Callable
         }
     }
 
-    /**
-     * A utility method to update the internal value of this object.
-     *
-     * Used by __i*__ operations to do an in-place operation.
-     * obj must be of type org.python.types.Type
-     */
-    void setValue(org.python.Object obj) {
-        this.klass = ((org.python.types.Type) obj).klass;
-    }
-
     public Type(Origin origin, java.lang.Class klass) {
         super(origin, null);
 
@@ -260,7 +289,7 @@ public class Type extends org.python.types.Object implements org.python.Callable
     }
 
     @org.python.Method(
-            __doc__ = ""
+            __doc__ = "Return repr(self)."
     )
     public org.python.types.Str __repr__() {
         if (this.klass == null) {
@@ -283,6 +312,15 @@ public class Type extends org.python.types.Object implements org.python.Callable
         // System.out.println("GETATTRIBUTE CLASS " + this.klass.getName() + " " + name + " " + this.origin);
         // System.out.println("CLASS ATTRS " + this.__dict__);
         org.python.Object value = this.__dict__.get(name);
+
+        // It's an org.python.types Method that hasn't been initialized into __dict__ yet
+        if (value == null) {
+            value = org.Python.getPythonFunction(name, klass);
+            if (value != null) {
+                this.__dict__.put(name, value);
+            }
+        }
+
         if (value == null) {
             // We need to differentiate between "doesn't exist in the __dict__", and
             // exists, but has a value of null.
@@ -389,21 +427,22 @@ public class Type extends org.python.types.Object implements org.python.Callable
 
                     adjusted_args = new org.python.Object[arg_names.length + default_arg_names.length];
 
-                    if (args.length < n_args) {
+                    int n_provided_args = (args == null) ? 0 : args.length;
+                    if (n_provided_args < n_args) {
                         // Take as many positional arguments as have been literally provided
-                        for (a = 0; a < args.length; a++) {
+                        for (a = 0; a < n_provided_args; a++) {
                             adjusted_args[a] = args[a];
                         }
 
                         // Populate the rest from kwargs
-                        for (a = args.length; a < n_args; a++) {
+                        for (a = n_provided_args; a < n_args; a++) {
                             if (a < arg_names.length) {
                                 arg_name = arg_names[a];
                             } else {
                                 arg_name = default_arg_names[a - arg_names.length];
                             }
 
-                            arg = kwargs.remove(arg_name);
+                            arg = (kwargs == null) ? null : kwargs.remove(arg_name);
                             if (arg == null && a < arg_names.length) {
                                 throw new org.python.exceptions.TypeError(
                                         this.PYTHON_TYPE_NAME + " constructor missing positional argument '" +
@@ -412,12 +451,12 @@ public class Type extends org.python.types.Object implements org.python.Callable
                             }
                             adjusted_args[a] = arg;
                         }
-                    } else {
+                    } else if (n_provided_args == n_args) {
                         for (a = 0; a < n_args; a++) {
                             adjusted_args[a] = args[a];
                         }
 
-                        for (a = n_args; a < args.length; a++) {
+                        for (a = n_args; a < n_provided_args; a++) {
                             if (a < arg_names.length) {
                                 arg_name = arg_names[a];
                             } else {
@@ -425,6 +464,9 @@ public class Type extends org.python.types.Object implements org.python.Callable
                             }
                             kwargs.put(arg_name, args[a]);
                         }
+                    } else {
+                        // More arguments than expected, call the constructor anyway to handle too many arguments
+                        adjusted_args = args;
                     }
                 } else {
                     adjusted_args = args;
@@ -435,7 +477,7 @@ public class Type extends org.python.types.Object implements org.python.Callable
                 // }
                 // org.Python.debug("         adj kwargs: ", kwargs);
 
-                return (org.python.Object) this.constructor.newInstance(adjusted_args, kwargs);
+                return (org.python.Object) this.constructor.newInstance((adjusted_args != null) ? adjusted_args : getEmptyArgs(), (kwargs != null) ? kwargs : getEmptyKwargs());
             } else {
                 throw new org.python.exceptions.RuntimeError("No Python-compatible constructor for type " + this.klass);
             }
